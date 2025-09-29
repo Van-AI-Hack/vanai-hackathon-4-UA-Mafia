@@ -158,3 +158,5 @@ dmypy.json
 # Keep important files
 !web/public/icons/
 !web/public/screenshots/
+
+

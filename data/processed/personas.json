@@ -1,0 +1,278 @@
+{
+  "persona_0": {
+    "id": 0,
+    "size": 223,
+    "percentage": 22.166998011928428,
+    "characteristics": {
+      "music_relationship": {
+        "top_response": "I like it, but don’t keep up",
+        "distribution": {
+          "I like it, but don’t keep up": 97,
+          "I’m obsessed 🎵": 74,
+          "I’m more of a casual listener": 52
+        }
+      },
+      "discovery_method": {
+        "top_response": "The radio 📻",
+        "distribution": {
+          "The radio 📻": 126,
+          "Family or friends": 32,
+          "Watching MuchMusic or MTV": 18
+        }
+      },
+      "age_group": {
+        "top_response": "55 Plus",
+        "distribution": {
+          "55 Plus": 84,
+          "35-54": 75,
+          "18-34": 64
+        }
+      },
+      "ai_attitude": {
+        "top_response": "Maybe — I’m curious",
+        "distribution": {
+          "Maybe — I’m curious": 74,
+          "Sure I would — if it sounds good, why not?": 56,
+          "Nah — I prefer music made by real people": 53
+        }
+      },
+      "music_preference": {
+        "top_response": "All over the place 🎲",
+        "distribution": {
+          "All over the place 🎲": 102,
+          "Classic throwbacks 🎸": 59,
+          "Dancey + upbeat 💃": 24
+        }
+      }
+    },
+    "name": "The Radio Traditionalist",
+    "description": "Discovered music through radio and traditional means. Prefers human-made music and is skeptical of AI-generated content. Values authenticity and personal connection to music.",
+    "traits": [
+      "Traditional",
+      "Authentic",
+      "Skeptical of AI",
+      "Radio-focused"
+    ],
+    "color": "#FF6B6B"
+  },
+  "persona_1": {
+    "id": 1,
+    "size": 314,
+    "percentage": 31.21272365805169,
+    "characteristics": {
+      "music_relationship": {
+        "top_response": "I like it, but don’t keep up",
+        "distribution": {
+          "I like it, but don’t keep up": 167,
+          "I’m more of a casual listener": 96,
+          "I’m obsessed 🎵": 51
+        }
+      },
+      "discovery_method": {
+        "top_response": "The radio 📻",
+        "distribution": {
+          "The radio 📻": 271,
+          "Burned CDs or vinyl": 16,
+          "Family or friends": 15
+        }
+      },
+      "age_group": {
+        "top_response": "55 Plus",
+        "distribution": {
+          "55 Plus": 267,
+          "35-54": 45,
+          "18-34": 2
+        }
+      },
+      "ai_attitude": {
+        "top_response": "Nah — I prefer music made by real people",
+        "distribution": {
+          "Nah — I prefer music made by real people": 231,
+          "Maybe — I’m curious": 42,
+          "Not sure yet": 29
+        }
+      },
+      "music_preference": {
+        "top_response": "Classic throwbacks 🎸",
+        "distribution": {
+          "Classic throwbacks 🎸": 192,
+          "All over the place 🎲": 93,
+          "Chill + lo-fi 😌": 17
+        }
+      }
+    },
+    "name": "The Digital Explorer",
+    "description": "Embraces new music discovery methods and is open to AI-generated music. Tech-savvy and curious about emerging technologies in music.",
+    "traits": [
+      "Tech-forward",
+      "Curious",
+      "Open to AI",
+      "Digital-native"
+    ],
+    "color": "#4ECDC4"
+  },
+  "persona_2": {
+    "id": 2,
+    "size": 412,
+    "percentage": 40.95427435387674,
+    "characteristics": {
+      "music_relationship": {
+        "top_response": "I’m obsessed 🎵",
+        "distribution": {
+          "I’m obsessed 🎵": 176,
+          "I like it, but don’t keep up": 171,
+          "I’m more of a casual listener": 65
+        }
+      },
+      "discovery_method": {
+        "top_response": "The radio 📻",
+        "distribution": {
+          "The radio 📻": 146,
+          "Family or friends": 104,
+          "Watching MuchMusic or MTV": 48
+        }
+      },
+      "age_group": {
+        "top_response": "35-54",
+        "distribution": {
+          "35-54": 195,
+          "18-34": 189,
+          "55 Plus": 28
+        }
+      },
+      "ai_attitude": {
+        "top_response": "Nah — I prefer music made by real people",
+        "distribution": {
+          "Nah — I prefer music made by real people": 331,
+          "Maybe — I’m curious": 43,
+          "Not sure yet": 17
+        }
+      },
+      "music_preference": {
+        "top_response": "All over the place 🎲",
+        "distribution": {
+          "All over the place 🎲": 303,
+          "Classic throwbacks 🎸": 40,
+          "Dancey + upbeat 💃": 29
+        }
+      }
+    },
+    "name": "The Casual Listener",
+    "description": "Enjoys music but doesn't actively seek out new content. Listens for relaxation and background ambiance. Moderate views on AI music.",
+    "traits": [
+      "Relaxed",
+      "Background listener",
+      "Moderate views",
+      "Easy-going"
+    ],
+    "color": "#45B7D1"
+  },
+  "persona_3": {
+    "id": 3,
+    "size": 9,
+    "percentage": 0.8946322067594433,
+    "characteristics": {
+      "music_relationship": {
+        "top_response": "I like it, but don’t keep up",
+        "distribution": {
+          "I’m more of a casual listener": 3,
+          "I like it, but don’t keep up": 3,
+          "I’m obsessed 🎵": 2
+        }
+      },
+      "discovery_method": {
+        "top_response": "The radio 📻",
+        "distribution": {
+          "The radio 📻": 5,
+          "Family or friends": 3,
+          "Something else": 1
+        }
+      },
+      "age_group": {
+        "top_response": "55 Plus",
+        "distribution": {
+          "55 Plus": 7,
+          "35-54": 2
+        }
+      },
+      "ai_attitude": {
+        "top_response": "Maybe — I’m curious",
+        "distribution": {
+          "Nah — I prefer music made by real people": 3,
+          "Maybe — I’m curious": 3,
+          "Sure I would — if it sounds good, why not?": 2
+        }
+      },
+      "music_preference": {
+        "top_response": "Classic throwbacks 🎸",
+        "distribution": {
+          "Classic throwbacks 🎸": 5,
+          "All over the place 🎲": 4
+        }
+      }
+    },
+    "name": "The Music Obsessive",
+    "description": "Passionate about music and actively seeks new discoveries. Uses music for emotional regulation and personal expression. Strong opinions on music quality.",
+    "traits": [
+      "Passionate",
+      "Emotionally connected",
+      "Quality-focused",
+      "Expressive"
+    ],
+    "color": "#96CEB4"
+  },
+  "persona_4": {
+    "id": 4,
+    "size": 48,
+    "percentage": 4.7713717693836974,
+    "characteristics": {
+      "music_relationship": {
+        "top_response": "Meh — it’s not a big part of my life",
+        "distribution": {
+          "Meh — it’s not a big part of my life": 48
+        }
+      },
+      "discovery_method": {
+        "top_response": "The radio 📻",
+        "distribution": {
+          "The radio 📻": 23,
+          "Something else": 7,
+          "Family or friends": 7
+        }
+      },
+      "age_group": {
+        "top_response": "55 Plus",
+        "distribution": {
+          "55 Plus": 25,
+          "35-54": 14,
+          "18-34": 9
+        }
+      },
+      "ai_attitude": {
+        "top_response": "Nah — I prefer music made by real people",
+        "distribution": {
+          "Nah — I prefer music made by real people": 26,
+          "Not sure yet": 14,
+          "Sure I would — if it sounds good, why not?": 5
+        }
+      },
+      "music_preference": {
+        "top_response": "Classic throwbacks 🎸",
+        "distribution": {
+          "Classic throwbacks 🎸": 23,
+          "All over the place 🎲": 15,
+          "Dancey + upbeat 💃": 4
+        }
+      }
+    },
+    "name": "The AI Skeptic",
+    "description": "Strongly prefers human-made music and is uncomfortable with AI using deceased artists' voices. Values human creativity and authenticity.",
+    "traits": [
+      "Human-focused",
+      "Authenticity-driven",
+      "AI-resistant",
+      "Creative"
+    ],
+    "color": "#FFEAA7"
+  }
+}

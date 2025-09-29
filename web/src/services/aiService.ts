@@ -234,19 +234,119 @@ const generateFunFacts = async (persona: Persona): Promise<string[]> => {
 const generateChatResponse = async (message: string, persona: Persona): Promise<string> => {
   await new Promise(resolve => setTimeout(resolve, 1200))
   
-  const responses = [
-    `Based on your ${persona.name} profile, I can tell you that your musical preferences reflect a deep connection to authentic expression. Your discovery method through ${persona.characteristics.discovery_method.top_response} shows you value ${persona.characteristics.music_relationship.top_response}.`,
-    
-    `As a ${persona.name}, your approach to music is unique. Your ${persona.characteristics.ai_attitude.top_response} attitude toward AI music aligns with your ${persona.characteristics.age_group.top_response} demographic's values.`,
-    
-    `Your music DNA reveals fascinating patterns! The ${persona.name} type is known for ${persona.traits.join(', ').toLowerCase()}, which explains your musical journey.`,
-    
-    `Interesting question! Given your ${persona.name} profile, I'd recommend exploring artists who share your values of ${persona.characteristics.music_relationship.top_response}.`,
-    
-    `Your musical identity as a ${persona.name} is quite distinctive. You're part of a ${persona.percentage}% of Canadian music listeners who share similar preferences.`
-  ]
+  const lowerMessage = message.toLowerCase()
   
-  return responses[Math.floor(Math.random() * responses.length)]
+  // Music taste analysis
+  if (lowerMessage.includes('music taste') || lowerMessage.includes('what does my music') || lowerMessage.includes('taste say about me')) {
+    return generateMusicTasteInsights(persona)
+  }
+
+  // Recommendations
+  if (lowerMessage.includes('recommend') || lowerMessage.includes('suggest') || lowerMessage.includes('whom would you recommend')) {
+    const recs = await generateMusicRecommendations(persona)
+    return `Based on your ${persona.name} profile, here are some perfect matches for you:\n\n🎵 **${recs[0].title}** by ${recs[0].artist} (${recs[0].genre})\n*${recs[0].reason}*\n\n🎵 **${recs[1].title}** by ${recs[1].artist} (${recs[1].genre})\n*${recs[1].reason}*\n\nThese artists align perfectly with your discovery method (${persona.characteristics.discovery_method.top_response}) and your music relationship (${persona.characteristics.music_relationship.top_response}).`
+  }
+
+  // Persona questions
+  if (lowerMessage.includes('my persona') || lowerMessage.includes('what am i') || lowerMessage.includes('who am i')) {
+    return `You are a **${persona.name}**! 🎭\n\nThis means you're someone who ${persona.description.toLowerCase()}\n\nYour key traits:\n${persona.traits.map(trait => `• ${trait}`).join('\n')}\n\nYour music discovery style: ${persona.characteristics.discovery_method.top_response}\nYour relationship with music: ${persona.characteristics.music_relationship.top_response}\nYour view on AI music: ${persona.characteristics.ai_attitude.top_response}`
+  }
+
+  // AI music questions
+  if (lowerMessage.includes('ai music') || lowerMessage.includes('artificial intelligence')) {
+    return `As a ${persona.name}, you have a ${persona.characteristics.ai_attitude.top_response.toLowerCase()} view on AI-generated music.\n\nThis is interesting because it shows you ${getAIMusicInsight(persona)}. Your perspective is shared by many in the ${persona.characteristics.age_group.top_response} age group who value ${getMusicValues(persona)}.`
+  }
+
+  // Discovery questions
+  if (lowerMessage.includes('discovery') || lowerMessage.includes('find music') || lowerMessage.includes('new music')) {
+    return `Your primary music discovery method is **${persona.characteristics.discovery_method.top_response}**! 🎧\n\nThis suggests you ${getDiscoveryInsight(persona)}. Many ${persona.name}s like you also enjoy discovering music through ${getAlternativeDiscoveryMethods(persona)}.`
+  }
+
+  // Greetings
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+    const greetings = [
+      `Hey there, ${persona.name}! 🎵 Ready to explore your Canadian Music DNA?`,
+      `Hello! I'm your AI Music DNA assistant. What would you like to know about your ${persona.name} profile?`,
+      `Hi! I see you're a ${persona.name} - that's fascinating! How can I help you dive deeper into your musical identity?`
+    ]
+    return greetings[Math.floor(Math.random() * greetings.length)]
+  }
+
+  // Thank you
+  if (lowerMessage.includes('thank you') || lowerMessage.includes('thanks')) {
+    const thanks = [
+      `You're very welcome! I love helping people discover their musical identity. Is there anything else about your ${persona.name} profile you'd like to explore?`,
+      `My pleasure! Your ${persona.name} persona is really interesting. Feel free to ask me anything else about music, AI, or your unique musical DNA!`,
+      `Happy to help! The world of music is so rich and your ${persona.name} perspective adds such a unique flavor to it. What else can I tell you?`
+    ]
+    return thanks[Math.floor(Math.random() * thanks.length)]
+  }
+
+  // Default responses with more personality
+  const defaultResponses = [
+    `That's a great question! As your AI Music DNA assistant, I'm here to help you understand your ${persona.name} profile better. Could you ask about your music taste, recommendations, or what your persona says about you?`,
+    `Interesting! I'd love to help you explore that. As a ${persona.name}, you have such a unique musical perspective. What specifically would you like to know about your music DNA?`,
+    `That's fascinating! Your ${persona.name} profile suggests some really interesting musical preferences. Could you tell me more about what you're curious about? I can help with recommendations, insights, or explaining your musical identity.`
+  ]
+  return defaultResponses[Math.floor(Math.random() * defaultResponses.length)]
+}
+
+// Helper functions for better responses
+const generateMusicTasteInsights = (persona: Persona): string => {
+  const insights = {
+    'The Radio Traditionalist': `Your music taste reveals someone who values **authenticity and tradition**! 🎵\n\nAs a Radio Traditionalist, you prefer music that feels genuine and human-made. Your taste suggests you appreciate:\n• **Timeless quality** over trendy sounds\n• **Emotional depth** in lyrics and melodies\n• **Artistic integrity** over commercial appeal\n• **Classic Canadian artists** who tell real stories\n\nYour preference for radio discovery shows you trust curated, professional curation over algorithms. This suggests you value **expertise and human judgment** in music selection.`,
+    
+    'The Digital Explorer': `Your music taste shows you're a **tech-savvy music adventurer**! 🚀\n\nAs a Digital Explorer, your taste reveals:\n• **Openness to innovation** and new sounds\n• **Curiosity about emerging artists** and genres\n• **Comfort with digital platforms** and streaming\n• **Interest in AI and technology** in music\n\nYour discovery method (${persona.characteristics.discovery_method.top_response}) suggests you're an **early adopter** who enjoys being on the cutting edge of music trends. You likely appreciate artists who push boundaries and experiment with new technologies.`,
+    
+    'The Casual Listener': `Your music taste reflects a **balanced, easy-going approach** to music! 😌\n\nAs a Casual Listener, your taste suggests:\n• **Music as a mood enhancer** rather than identity\n• **Preference for familiar, comfortable sounds**\n• **Value for music that fits your lifestyle**\n• **Appreciation for both new and classic artists**\n\nYour ${persona.characteristics.music_relationship.top_response} relationship with music shows you enjoy it without it dominating your life - a healthy, balanced approach!`,
+    
+    'The Music Obsessive': `Your music taste reveals a **deep, passionate connection** to music! 🔥\n\nAs a Music Obsessive, your taste shows:\n• **Music as a core part of your identity**\n• **Emotional investment** in lyrics and melodies\n• **Seeking music that resonates deeply**\n• **Quality over quantity** in your listening\n\nYour ${persona.characteristics.music_relationship.top_response} relationship suggests music is more than entertainment - it's a **source of meaning and expression** in your life.`,
+    
+    'The AI Skeptic': `Your music taste shows you value **human creativity and authenticity**! 🎭\n\nAs an AI Skeptic, your taste reveals:\n• **Preference for genuine human expression**\n• **Value for artistic integrity** over technological gimmicks\n• **Appreciation for raw, unfiltered talent**\n• **Skepticism of artificial enhancement**\n\nYour ${persona.characteristics.ai_attitude.top_response} stance suggests you believe music should come from **real human experience and emotion**, not algorithms.`
+  }
+
+  return insights[persona.name] || `Your music taste as a ${persona.name} reveals unique preferences that reflect your ${persona.characteristics.music_relationship.top_response} relationship with music and your ${persona.characteristics.discovery_method.top_response} discovery style.`
+}
+
+const getAIMusicInsight = (persona: Persona): string => {
+  const insights = {
+    'I strongly prefer human-made music': 'value authenticity and human creativity over artificial generation',
+    'I\'m neutral about AI music': 'have a balanced view, open to quality regardless of source',
+    'I\'m open to AI-generated music': 'are curious about new technologies and their creative potential',
+    'I embrace AI-generated music': 'are excited about the future of music and technological innovation'
+  }
+  return insights[persona.characteristics.ai_attitude.top_response] || 'have a nuanced view on the role of technology in music'
+}
+
+const getMusicValues = (persona: Persona): string => {
+  const values = {
+    'I\'m obsessed with music': 'deep emotional connection and artistic expression',
+    'I like it but don\'t keep up with new releases': 'comfort and familiarity in musical choices',
+    'I listen casually': 'music as a pleasant background to life'
+  }
+  return values[persona.characteristics.music_relationship.top_response] || 'unique musical preferences'
+}
+
+const getDiscoveryInsight = (persona: Persona): string => {
+  const insights = {
+    'Radio': 'trust professional curation and enjoy the serendipity of radio discovery',
+    'Friends/Family': 'value personal recommendations and social connection in music',
+    'Streaming recommendations': 'are comfortable with algorithmic suggestions and digital platforms',
+    'Social Media': 'discover music through social networks and viral content',
+    'Live Events': 'prefer experiencing music in person and supporting live performances'
+  }
+  return insights[persona.characteristics.discovery_method.top_response] || 'have a unique approach to finding new music'
+}
+
+const getAlternativeDiscoveryMethods = (persona: Persona): string => {
+  const alternatives = {
+    'Radio': 'streaming playlists, music blogs, and word-of-mouth',
+    'Friends/Family': 'radio, streaming, and live events',
+    'Streaming recommendations': 'social media, live events, and music blogs',
+    'Social Media': 'streaming, radio, and personal recommendations',
+    'Live Events': 'streaming, radio, and social media'
+  }
+  return alternatives[persona.characteristics.discovery_method.top_response] || 'various other discovery methods'
 }
 
 // TTS Service

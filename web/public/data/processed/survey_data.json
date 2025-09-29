@@ -1,0 +1,76 @@
+{
+  "total_responses": 1006,
+  "demographics": {
+    "age_groups": {
+      "55 Plus": 411,
+      "35-54": 331,
+      "18-34": 264
+    },
+    "provinces": {
+      "Ontario": 486,
+      "British Columbia": 167,
+      "Alberta": 127,
+      "Manitoba": 43,
+      "Nova Scotia": 40,
+      "Quebec": 38,
+      "Saskatchewan": 34,
+      "New Brunswick": 18,
+      "Newfoundland and Labrador": 18,
+      "Prince Edward Island": 9
+    },
+    "gender": {
+      "Female": 522,
+      "Male": 484
+    },
+    "education": {
+      "University undergraduate degree, such as a bachelors degree": 336,
+      "Graduated from college/trade school": 236,
+      "University graduate degree, such as a masters or PhD": 173,
+      "Some college/trade school": 90,
+      "Some university": 84,
+      "High school graduate": 75,
+      "Some elementary or high school": 12
+    }
+  },
+  "music_relationship": {
+    "I like it, but don’t keep up": 438,
+    "I’m obsessed 🎵": 303,
+    "I’m more of a casual listener": 216,
+    "Meh — it’s not a big part of my life": 49
+  },
+  "discovery_methods": {
+    "The radio 📻": 571,
+    "Family or friends": 161,
+    "Watching MuchMusic or MTV": 70,
+    "Burned CDs or vinyl": 69,
+    "Something else": 53,
+    "Spotify or Apple Music": 50,
+    "LimeWire or Napster": 23,
+    "TikTok or social media": 9
+  },
+  "ai_attitudes": {
+    "Nah — I prefer music made by real people": 644,
+    "Maybe — I’m curious": 164,
+    "Sure I would — if it sounds good, why not?": 84,
+    "Not sure yet": 84,
+    "Yes – and I already have": 30
+  },
+  "listening_habits": {
+    "Q8_Music_listen_time_GRID_1": 201,
+    "Q8_Music_listen_time_GRID_2": 742,
+    "Q8_Music_listen_time_GRID_3": 604,
+    "Q8_Music_listen_time_GRID_4": 347,
+    "Q8_Music_listen_time_GRID_5": 491,
+    "Q8_Music_listen_time_GRID_6": 341
+  },
+  "format_evolution": {
+    "Cassettes to CDs 💿": 414,
+    "Vinyl to 8-tracks": 201,
+    "CDs to illegal downloads (Napster, LimeWire) 💻": 177,
+    "8-tracks to cassette tapes": 75,
+    "Digital downloads to streaming (Spotify, Apple Music) 🎧": 66,
+    "Illegal downloads to legal digital (iTunes) 🎵": 44,
+    "I haven’t really experienced a big format change": 16,
+    "Not sure": 13
+  }
+}

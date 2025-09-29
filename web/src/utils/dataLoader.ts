@@ -262,15 +262,49 @@ const mockSurveyData: SurveyData = {
 
 // Data loading functions
 export const loadPersonas = async (): Promise<Persona[]> => {
-  // In a real app, this would fetch from an API
-  // For now, return mock data
+  try {
+    // Try to load real data first
+    const response = await fetch('/data/processed/personas.json')
+    if (response.ok) {
+      const realData = await response.json()
+      // Convert the real data format to our Persona interface
+      const personas: Persona[] = Object.values(realData).map((persona: any) => ({
+        id: persona.id,
+        name: persona.name,
+        description: persona.description,
+        traits: persona.traits,
+        color: persona.color,
+        characteristics: persona.characteristics,
+        size: persona.size,
+        percentage: persona.percentage
+      }))
+      console.log('Loaded real personas:', personas.length)
+      return personas
+    }
+  } catch (error) {
+    console.warn('Could not load real personas, using mock data:', error)
+  }
+  
+  // Fallback to mock data
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockPersonas), 500)
   })
 }
 
 export const loadSurveyData = async (): Promise<SurveyData> => {
-  // In a real app, this would fetch from an API
+  try {
+    // Try to load real data first
+    const response = await fetch('/data/processed/survey_data.json')
+    if (response.ok) {
+      const realData = await response.json()
+      console.log('Loaded real survey data:', realData.total_responses, 'responses')
+      return realData
+    }
+  } catch (error) {
+    console.warn('Could not load real survey data, using mock data:', error)
+  }
+  
+  // Fallback to mock data
   return new Promise((resolve) => {
     setTimeout(() => resolve(mockSurveyData), 300)
   })
@@ -348,3 +382,5 @@ export const classifyPersona = (answers: Record<string, string>, personas: Perso
 
   return bestMatch
 }
+
+

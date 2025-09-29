@@ -203,3 +203,5 @@ export const requestNotificationPermission = () => pwaManager.requestNotificatio
 export const showNotification = (title: string, options?: NotificationOptions) => pwaManager.showNotification(title, options)
 export const cacheUrls = (urls: string[]) => pwaManager.cacheUrls(urls)
 export const clearCaches = () => pwaManager.clearCaches()
+
+

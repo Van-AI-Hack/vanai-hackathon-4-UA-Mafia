@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-Canadian Music DNA - Persona Clustering Analysis
-Vancouver AI Hackathon Round 4: The Soundtrack of Us
+Simple script to run persona clustering without emoji issues
 """
 
+import sys
+import os
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
 import json
-import os
 from pathlib import Path
+
+# Set UTF-8 encoding
+sys.stdout.reconfigure(encoding='utf-8')
 
 def load_and_prepare_data():
     """Load and prepare the music survey data for clustering"""
@@ -55,24 +58,6 @@ def feature_engineering(df):
     print(f"   Features created: {feature_encoded.shape[1]} dimensions")
     return feature_encoded, features
 
-def find_optimal_clusters(X, max_k=8):
-    """Find optimal number of clusters using silhouette score"""
-    print("\nFinding optimal number of clusters...")
-    
-    silhouette_scores = []
-    k_range = range(2, max_k + 1)
-    
-    for k in k_range:
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-        cluster_labels = kmeans.fit_predict(X)
-        silhouette_avg = silhouette_score(X, cluster_labels)
-        silhouette_scores.append(silhouette_avg)
-        print(f"   k={k}: Silhouette Score = {silhouette_avg:.3f}")
-    
-    optimal_k = k_range[np.argmax(silhouette_scores)]
-    print(f"Optimal k = {optimal_k}")
-    return optimal_k
-
 def create_personas(df, feature_encoded, k=5):
     """Create music personas using K-means clustering"""
     print(f"\nCreating {k} music personas...")
@@ -105,9 +90,9 @@ def analyze_personas(df_clustered):
         cluster_data = df_clustered[df_clustered['persona_cluster'] == cluster_id]
         
         persona = {
-            'id': cluster_id,
-            'size': len(cluster_data),
-            'percentage': (len(cluster_data) / len(df_clustered)) * 100,
+            'id': int(cluster_id),
+            'size': int(len(cluster_data)),
+            'percentage': float((len(cluster_data) / len(df_clustered)) * 100),
             'characteristics': {}
         }
         
@@ -123,7 +108,7 @@ def analyze_personas(df_clustered):
         for characteristic, column in key_questions.items():
             if column in cluster_data.columns:
                 top_response = cluster_data[column].mode().iloc[0] if not cluster_data[column].mode().empty else 'Unknown'
-                response_distribution = cluster_data[column].value_counts().head(3).to_dict()
+                response_distribution = {str(k): int(v) for k, v in cluster_data[column].value_counts().head(3).to_dict().items()}
                 persona['characteristics'][characteristic] = {
                     'top_response': top_response,
                     'distribution': response_distribution
@@ -193,8 +178,8 @@ def export_persona_data(personas, df_clustered):
     
     # Export personas JSON
     personas_file = output_dir / "personas.json"
-    with open(personas_file, 'w') as f:
-        json.dump(personas, f, indent=2)
+    with open(personas_file, 'w', encoding='utf-8') as f:
+        json.dump(personas, f, indent=2, ensure_ascii=False)
     
     # Export clustered data
     clustered_file = output_dir / "clustered_data.csv"
@@ -216,11 +201,8 @@ def main():
     # Feature engineering
     feature_encoded, feature_mapping = feature_engineering(df)
     
-    # Find optimal clusters
-    optimal_k = find_optimal_clusters(feature_encoded)
-    
-    # Create personas
-    df_clustered, kmeans, scaler = create_personas(df, feature_encoded, k=optimal_k)
+    # Create personas (use 5 clusters as originally intended)
+    df_clustered, kmeans, scaler = create_personas(df, feature_encoded, k=5)
     
     # Analyze personas
     personas = analyze_personas(df_clustered)

@@ -510,7 +510,7 @@ const Dashboard: React.FC<DashboardProps> = ({ persona, surveyData, personas, on
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {renderTabContent()}
+            {surveyData && personas.length > 0 ? renderTabContent() : renderLegacyTabContent()}
           </motion.div>
         </motion.div>
       </div>

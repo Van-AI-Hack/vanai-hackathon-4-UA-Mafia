@@ -251,3 +251,5 @@ self.addEventListener('message', (event) => {
     )
   }
 })
+
+

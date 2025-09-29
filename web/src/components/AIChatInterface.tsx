@@ -26,6 +26,9 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({ persona }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Debug logging
+  console.log('AIChatInterface rendered with persona:', persona?.name)
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
