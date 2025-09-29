@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/music-dna-icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Discover your unique Canadian Music DNA through AI-powered analysis, personalized recommendations, and interactive persona classification. Find your musical identity today!" />
+    <meta name="keywords" content="music, canada, dna, persona, analysis, interactive, AI, recommendations, music discovery, canadian music, music psychology" />
+    <meta name="author" content="Canadian Music DNA Team" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#00D4FF" />
+    <meta name="msapplication-TileColor" content="#0f0f23" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Apple PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Music DNA" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Canadian Music DNA - Discover Your Musical Identity" />
+    <meta property="og:description" content="Discover your unique Canadian Music DNA through AI-powered analysis and personalized recommendations" />
+    <meta property="og:image" content="/screenshots/desktop-home.png" />
+    <meta property="og:url" content="https://canadian-music-dna.com" />
+    <meta property="og:site_name" content="Canadian Music DNA" />
+    <meta property="og:locale" content="en_CA" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Canadian Music DNA - Discover Your Musical Identity" />
+    <meta name="twitter:description" content="Discover your unique Canadian Music DNA through AI-powered analysis and personalized recommendations" />
+    <meta name="twitter:image" content="/screenshots/desktop-home.png" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Canadian Music DNA",
+      "description": "Discover your unique Canadian Music DNA through AI-powered analysis and personalized recommendations",
+      "url": "https://canadian-music-dna.com",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CAD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Canadian Music DNA Team"
+      }
+    }
+    </script>
+    
+    <title>Canadian Music DNA - Discover Your Musical Identity</title>
+    
+    <!-- Cyberpunk Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Cyberpunk Styles -->
+    <style>
+      :root {
+        --neon-cyan: #00f5ff;
+        --neon-pink: #ff0080;
+        --neon-purple: #8a2be2;
+        --maple-neon: #ff3366;
+        --northern-cyan: #00ccff;
+        --aurora-green: #66ff99;
+        
+        --bg-primary: rgba(0,0,0,0.95);
+        --bg-secondary: rgba(0,0,0,0.8);
+        --grid-color: rgba(255,255,255,0.1);
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        color: white;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading Animation */
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(0, 245, 255, 0.3);
+        border-top: 3px solid var(--neon-cyan);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        color: var(--neon-cyan);
+        font-size: 18px;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading screen will be replaced by React app -->
+      <div class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Canadian Music DNA...</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

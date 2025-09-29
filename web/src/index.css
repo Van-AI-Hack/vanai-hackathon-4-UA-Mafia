@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cyberpunk Design System */
+:root {
+  --neon-cyan: #00f5ff;
+  --neon-pink: #ff0080;
+  --neon-purple: #8a2be2;
+  --maple-neon: #ff3366;
+  --northern-cyan: #00ccff;
+  --aurora-green: #66ff99;
+  
+  --bg-primary: rgba(0,0,0,0.95);
+  --bg-secondary: rgba(0,0,0,0.8);
+  --grid-color: rgba(255,255,255,0.1);
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--northern-cyan);
+}
+
+/* Neon Glow Effects */
+.neon-glow {
+  box-shadow: 0 0 5px var(--neon-cyan),
+              0 0 10px var(--neon-cyan),
+              0 0 15px var(--neon-cyan);
+}
+
+.neon-glow-pink {
+  box-shadow: 0 0 5px var(--neon-pink),
+              0 0 10px var(--neon-pink),
+              0 0 15px var(--neon-pink);
+}
+
+.neon-glow-purple {
+  box-shadow: 0 0 5px var(--neon-purple),
+              0 0 10px var(--neon-purple),
+              0 0 15px var(--neon-purple);
+}
+
+/* Glass Morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Cyberpunk Button */
+.cyberpunk-btn {
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+  border: 2px solid var(--neon-cyan);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyberpunk-btn:hover {
+  box-shadow: 0 0 20px var(--neon-cyan);
+  transform: translateY(-2px);
+}
+
+.cyberpunk-btn:active {
+  transform: translateY(0);
+}
+
+/* Cyberpunk Card */
+.cyberpunk-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyberpunk-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.cyberpunk-card:hover::before {
+  left: 100%;
+}
+
+/* Text Effects */
+.neon-text {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px var(--neon-cyan),
+               0 0 10px var(--neon-cyan),
+               0 0 15px var(--neon-cyan);
+}
+
+.gradient-text {
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Loading Animation */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 245, 255, 0.3);
+  border-top: 3px solid var(--neon-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cyberpunk-card {
+    padding: 16px;
+    margin: 8px;
+  }
+  
+  .cyberpunk-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Styles */
+*:focus {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --neon-cyan: #00ffff;
+    --neon-pink: #ff00ff;
+    --neon-purple: #8000ff;
+  }
+}
