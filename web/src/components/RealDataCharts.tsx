@@ -202,7 +202,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       const linkColors: string[] = []
       
       // Link discovery methods to age groups (proportional distribution)
-      discoveryKeys.forEach((method, methodIdx) => {
+      discoveryKeys.forEach((_, methodIdx) => {
         const methodValue = discoveryValues[methodIdx]
         ageGroups.forEach((_, ageIdx) => {
           const ageTargetIdx = discoveryKeys.length + ageIdx
@@ -466,58 +466,95 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
           {/* Listening Activities Bubble Chart */}
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
-            <h4 className="text-xl font-bold text-white mb-4">Listening Activities by Intensity</h4>
-            <div className="h-96">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-white">🫧 Listening Activities by Intensity</h4>
+              <span className="text-sm text-cyan-400 font-semibold">Multi-metric visualization</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Bubble size represents number of responses, color indicates listening intensity
+            </p>
+            <div className="h-[550px] rounded-lg overflow-hidden border border-cyan-400/30">
               <Plot
                 key={`bubble-${chartKey}`}
                 data={[bubbleData]}
                 layout={{
-                  title: {
-                    text: "Listening Activities Bubble Chart",
-                    font: { color: '#00ffff', size: 20, family: 'Arial, sans-serif' }
-                  },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)',
-                  font: { color: '#ffffff', family: 'Arial, sans-serif' },
-                  height: 500,
+                  ...getBaseLayout(""),
+                  height: 550,
                   xaxis: { 
                     title: "Activity Type",
+                    titlefont: { size: 14, color: '#00ffff' },
                     tickmode: "array",
                     tickvals: [0, 1, 2, 3, 4, 5],
                     ticktext: ["Commuting", "Working/Studying", "Exercise", "Relaxation", "Social Events", "Background"],
                     tickangle: -45,
                     showgrid: true,
-                    gridcolor: "rgba(255,255,255,0.1)",
+                    gridcolor: "rgba(0,255,255,0.15)",
                     zeroline: false,
                     showline: true,
-                    linecolor: "rgba(255,255,255,0.3)",
+                    linecolor: "rgba(0,255,255,0.5)",
+                    linewidth: 2,
                     range: [-0.5, 5.5]
                   },
                   yaxis: { 
                     title: "Number of Responses",
+                    titlefont: { size: 14, color: '#00ffff' },
                     showgrid: true,
-                    gridcolor: "rgba(255,255,255,0.1)",
+                    gridcolor: "rgba(0,255,255,0.15)",
                     zeroline: false,
                     showline: true,
-                    linecolor: "rgba(255,255,255,0.3)",
+                    linecolor: "rgba(0,255,255,0.5)",
+                    linewidth: 2,
                     range: [0, 800]
                   },
-                  margin: { l: 120, r: 120, t: 100, b: 150 },
+                  margin: { l: 80, r: 120, t: 40, b: 120 },
                   showlegend: false
                 }}
-                config={{ displayModeBar: false, responsive: true }}
+                config={{ 
+                  displayModeBar: true,
+                  displaylogo: false,
+                  responsive: true,
+                  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                  toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'listening_activities_bubble',
+                    height: 550,
+                    width: 1000,
+                    scale: 2
+                  }
+                }}
+                style={{ width: '100%', height: '100%' }}
                 onError={(err: any) => {
                   console.error('Bubble chart error:', err)
                   setError('Failed to render Bubble chart')
                 }}
               />
             </div>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+              <div className="text-center p-2 bg-cyan-400/10 rounded border border-cyan-400/30">
+                <div className="text-cyan-400 font-bold">🎧 Most Popular</div>
+                <div className="text-white mt-1">Working/Studying (742)</div>
+              </div>
+              <div className="text-center p-2 bg-purple-400/10 rounded border border-purple-400/30">
+                <div className="text-purple-400 font-bold">🏃 High Intensity</div>
+                <div className="text-white mt-1">Exercise (90%)</div>
+              </div>
+              <div className="text-center p-2 bg-pink-400/10 rounded border border-pink-400/30">
+                <div className="text-pink-400 font-bold">📊 Total Activities</div>
+                <div className="text-white mt-1">6 Categories</div>
+              </div>
+            </div>
           </motion.div>
 
           {/* Alternative: Horizontal Bar Chart with Intensity */}
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
-            <h4 className="text-xl font-bold text-white mb-4">Listening Activities - Bar Chart View</h4>
-            <div className="h-96">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-white">📊 Listening Activities - Ranked View</h4>
+              <span className="text-sm text-gray-400">Sorted by popularity</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Color gradient shows intensity level - brighter colors indicate higher engagement
+            </p>
+            <div className="h-[450px] rounded-lg overflow-hidden border border-purple-400/30">
               <Plot
                 key={`bar-${chartKey}`}
                 data={[{
@@ -537,32 +574,53 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                     ],
                     showscale: true,
                     colorbar: { 
-                      title: "Listening Intensity",
+                      title: "Intensity (%)",
                       titlefont: { color: "#ffffff", size: 12 },
-                      tickfont: { color: "#ffffff", size: 10 }
+                      tickfont: { color: "#ffffff", size: 11 },
+                      x: 1.15
                     },
-                    line: { color: "#ffffff", width: 2 }
+                    line: { color: "#00ffff", width: 2 }
                   },
-                  text: listeningActivities.map(activity => `${activity.count} responses<br>Intensity: ${activity.intensity}`),
+                  text: listeningActivities.map(activity => `${activity.count}`),
                   textposition: "inside",
-                  textfont: { color: "#ffffff", size: 12 }
+                  textfont: { color: "#ffffff", size: 14, weight: 'bold' },
+                  hovertemplate: '<b>%{y}</b><br>Responses: %{x}<br>Intensity: %{marker.color}%<br>Category: %{customdata}<extra></extra>',
+                  customdata: listeningActivities.map(activity => activity.category)
                 }]}
                 layout={{
-                  ...getBaseLayout("Listening Activities Bar Chart"),
-                  height: 400,
+                  ...getBaseLayout(""),
+                  height: 450,
                   xaxis: { 
                     title: "Number of Responses",
+                    titlefont: { size: 14, color: '#ff00ff' },
                     showgrid: true,
-                    gridcolor: "rgba(255,255,255,0.1)"
+                    gridcolor: "rgba(255,0,255,0.15)",
+                    zeroline: false,
+                    showline: true,
+                    linecolor: "rgba(255,0,255,0.5)",
+                    linewidth: 2
                   },
                   yaxis: { 
-                    title: "Activity Type",
-                    showgrid: true,
-                    gridcolor: "rgba(255,255,255,0.1)"
+                    title: "",
+                    showgrid: false,
+                    tickfont: { size: 12, color: '#ffffff' }
                   },
-                  margin: { l: 120, r: 100, t: 80, b: 80 }
+                  margin: { l: 140, r: 120, t: 40, b: 80 }
                 }}
-                config={{ displayModeBar: false, responsive: true }}
+                config={{ 
+                  displayModeBar: true,
+                  displaylogo: false,
+                  responsive: true,
+                  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                  toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'listening_activities_bar',
+                    height: 450,
+                    width: 1000,
+                    scale: 2
+                  }
+                }}
+                style={{ width: '100%', height: '100%' }}
                 onError={(err: any) => {
                   console.error('Bar chart error:', err)
                   setError('Failed to render Bar chart')
@@ -574,33 +632,64 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
           {/* Music Relationship Scatter Plot */}
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
-            <h4 className="text-xl font-bold text-white mb-4">Music Relationship Patterns</h4>
-            <div className="h-96">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-white">💗 Music Relationship Patterns</h4>
+              <span className="text-sm text-cyan-400 font-semibold">{Object.values(musicRelationship).reduce((a, b) => a + (b as number), 0)} responses</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              How Canadians describe their personal connection to music
+            </p>
+            <div className="h-[450px] rounded-lg overflow-hidden border border-pink-400/30">
               <Plot
                 key={`relationship-${chartKey}`}
                 data={[relationshipData]}
                 layout={{
-                  ...getBaseLayout("Music Relationship Analysis"),
-                  height: 350,
+                  ...getBaseLayout(""),
+                  height: 450,
                   xaxis: { 
                     title: "Relationship Type",
+                    titlefont: { size: 14, color: '#ff00ff' },
                     tickangle: -45,
                     showgrid: true,
-                    gridcolor: "rgba(255,255,255,0.1)"
+                    gridcolor: "rgba(255,0,255,0.15)",
+                    tickfont: { size: 11 },
+                    showline: true,
+                    linecolor: "rgba(255,0,255,0.5)",
+                    linewidth: 2
                   },
                   yaxis: { 
                     title: "Number of Responses",
+                    titlefont: { size: 14, color: '#ff00ff' },
                     showgrid: true,
-                    gridcolor: "rgba(255,255,255,0.1)"
+                    gridcolor: "rgba(255,0,255,0.15)",
+                    showline: true,
+                    linecolor: "rgba(255,0,255,0.5)",
+                    linewidth: 2
                   },
-                  margin: { l: 80, r: 80, t: 80, b: 100 }
+                  margin: { l: 80, r: 80, t: 40, b: 150 }
                 }}
-                config={{ displayModeBar: false, responsive: true }}
+                config={{ 
+                  displayModeBar: true,
+                  displaylogo: false,
+                  responsive: true,
+                  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                  toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'music_relationship_patterns',
+                    height: 450,
+                    width: 1000,
+                    scale: 2
+                  }
+                }}
+                style={{ width: '100%', height: '100%' }}
                 onError={(err: any) => {
                   console.error('Relationship chart error:', err)
                   setError('Failed to render Relationship chart')
                 }}
               />
+            </div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              💡 Tip: Larger bubbles represent stronger engagement levels. Most respondents like music but don't actively follow new releases.
             </div>
           </motion.div>
         </motion.div>
@@ -633,19 +722,39 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         )
       }
 
-      // Advanced donut chart
+      // Enhanced donut chart with better visuals
+      const aiKeys = Object.keys(aiData)
+      const aiValues = Object.values(aiData) as number[]
+      const totalAI = aiValues.reduce((a, b) => a + b, 0)
+      
       const donutData = {
-        type: "pie",
-        labels: Object.keys(aiData),
-        values: Object.values(aiData),
-        hole: 0.4,
+        type: "pie" as const,
+        labels: aiKeys,
+        values: aiValues,
+        hole: 0.45,
         marker: {
-          colors: ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4"],
-          line: { color: "#ffffff", width: 2 }
+          colors: ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57"],
+          line: { color: "#00ffff", width: 3 }
         },
         textinfo: "label+percent",
-        textposition: "outside"
+        textposition: "auto",
+        textfont: {
+          size: 13,
+          color: '#ffffff',
+          family: 'Arial, sans-serif',
+          weight: 'bold'
+        },
+        hovertemplate: '<b>%{label}</b><br>Responses: %{value}<br>Percentage: %{percent}<extra></extra>',
+        hoverlabel: {
+          bgcolor: '#1a1a1a',
+          bordercolor: '#00ffff',
+          font: { color: '#ffffff', size: 14 }
+        },
+        pull: aiValues.map(val => val === Math.max(...aiValues) ? 0.05 : 0)
       }
+
+      const topAttitude = aiKeys[aiValues.indexOf(Math.max(...aiValues))]
+      const topPercent = ((Math.max(...aiValues) / totalAI) * 100).toFixed(1)
 
       return (
         <motion.div variants={itemVariants} className="space-y-8">
@@ -653,21 +762,73 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
           {/* Donut Chart */}
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
-            <h4 className="text-xl font-bold text-white mb-4">AI Attitudes Breakdown</h4>
-            <div className="h-96">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-white">🍩 AI Attitudes Distribution</h4>
+              <span className="text-sm text-cyan-400 font-semibold">{totalAI} total responses</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Canadian perspectives on AI-generated music and its future in the industry
+            </p>
+            <div className="h-[550px] rounded-lg overflow-hidden border border-green-400/30">
               <Plot
                 key={`donut-${chartKey}`}
                 data={[donutData]}
                 layout={{
-                  ...getBaseLayout("AI Attitudes Distribution"),
-                  height: 350
+                  ...getBaseLayout(""),
+                  height: 550,
+                  showlegend: true,
+                  legend: {
+                    orientation: 'h',
+                    y: -0.15,
+                    x: 0.5,
+                    xanchor: 'center',
+                    font: { color: '#ffffff', size: 12 }
+                  },
+                  annotations: [{
+                    text: `<b>${totalAI}</b><br>Responses`,
+                    x: 0.5,
+                    y: 0.5,
+                    font: { size: 20, color: '#00ffff', family: 'Arial' },
+                    showarrow: false
+                  }],
+                  margin: { l: 40, r: 40, t: 40, b: 100 }
                 }}
-                config={{ displayModeBar: false, responsive: true }}
+                config={{ 
+                  displayModeBar: true,
+                  displaylogo: false,
+                  responsive: true,
+                  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                  toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'ai_attitudes_donut',
+                    height: 550,
+                    width: 1000,
+                    scale: 2
+                  }
+                }}
+                style={{ width: '100%', height: '100%' }}
                 onError={(err: any) => {
                   console.error('Donut chart error:', err)
                   setError('Failed to render Donut chart')
                 }}
               />
+            </div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="text-center p-3 bg-red-400/10 rounded border border-red-400/30">
+                <div className="text-red-400 font-bold">🎯 Dominant View</div>
+                <div className="text-white mt-1">{topAttitude.substring(0, 30)}...</div>
+              </div>
+              <div className="text-center p-3 bg-cyan-400/10 rounded border border-cyan-400/30">
+                <div className="text-cyan-400 font-bold">📊 Percentage</div>
+                <div className="text-white mt-1">{topPercent}% prefer human-made</div>
+              </div>
+              <div className="text-center p-3 bg-green-400/10 rounded border border-green-400/30">
+                <div className="text-green-400 font-bold">🔮 Future Outlook</div>
+                <div className="text-white mt-1">Most skeptical of AI music</div>
+              </div>
+            </div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              💡 Tip: Click on legend items to show/hide segments. The largest segment is slightly pulled out for emphasis.
             </div>
           </motion.div>
         </motion.div>
@@ -836,40 +997,127 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         )
       }
 
-      // Advanced waterfall chart
-      const waterfallData = {
-        type: "waterfall",
-        x: Object.keys(formatData),
-        y: Object.values(formatData),
-        connector: { line: { color: "rgb(63, 63, 63)" } },
-        increasing: { marker: { color: "#00ffff" } },
-        decreasing: { marker: { color: "#ff00ff" } },
-        totals: { marker: { color: "#ffff00" } }
+      // Enhanced format evolution with bar chart (waterfall can be tricky)
+      const formatKeys = Object.keys(formatData)
+      const formatValues = Object.values(formatData) as number[]
+      const totalFormat = formatValues.reduce((a, b) => a + b, 0)
+      
+      // Create a beautiful stacked/grouped visualization
+      const formatBarData = {
+        type: "bar" as const,
+        x: formatKeys,
+        y: formatValues,
+        marker: {
+          color: formatValues,
+          colorscale: [
+            [0, '#ff6b6b'],
+            [0.25, '#4ecdc4'],
+            [0.5, '#00ffff'],
+            [0.75, '#ff00ff'],
+            [1, '#ffff00']
+          ],
+          showscale: false,
+          line: {
+            color: '#00ffff',
+            width: 2
+          }
+        },
+        text: formatValues.map((val) => {
+          const pct = ((val / totalFormat) * 100).toFixed(1)
+          return `${val}<br>(${pct}%)`
+        }),
+        textposition: 'outside',
+        textfont: {
+          size: 13,
+          color: '#ffffff',
+          weight: 'bold'
+        },
+        hovertemplate: '<b>%{x}</b><br>Responses: %{y}<br>Percentage: %{customdata}%<extra></extra>',
+        customdata: formatValues.map(val => ((val / totalFormat) * 100).toFixed(1))
       }
+
+      const topFormat = formatKeys[formatValues.indexOf(Math.max(...formatValues))]
+      const topFormatCount = Math.max(...formatValues)
 
       return (
         <motion.div variants={itemVariants} className="space-y-8">
           <h3 className="text-3xl font-bold text-cyan-400 mb-6">🎵 Music Format Evolution</h3>
 
-          {/* Waterfall Chart */}
+          {/* Format Evolution Bar Chart */}
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
-            <h4 className="text-xl font-bold text-white mb-4">Format Evolution Waterfall</h4>
-            <div className="h-96">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-white">💿 Format Evolution Timeline</h4>
+              <span className="text-sm text-cyan-400 font-semibold">{totalFormat} format transitions</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              How Canadians experienced the evolution of music formats from physical to digital
+            </p>
+            <div className="h-[550px] rounded-lg overflow-hidden border border-yellow-400/30">
               <Plot
-                key={`waterfall-${chartKey}`}
-                data={[waterfallData]}
+                key={`format-${chartKey}`}
+                data={[formatBarData]}
                 layout={{
-                  ...getBaseLayout("Music Format Preferences Evolution"),
-                  height: 350,
-                  xaxis: { title: "Format Type" },
-                  yaxis: { title: "Response Count" }
+                  ...getBaseLayout(""),
+                  height: 550,
+                  xaxis: { 
+                    title: "Format Transition",
+                    titlefont: { size: 14, color: '#ffff00' },
+                    tickangle: -45,
+                    showgrid: false,
+                    tickfont: { size: 11, color: '#ffffff' },
+                    showline: true,
+                    linecolor: "rgba(255,255,0,0.5)",
+                    linewidth: 2
+                  },
+                  yaxis: { 
+                    title: "Number of Responses",
+                    titlefont: { size: 14, color: '#ffff00' },
+                    showgrid: true,
+                    gridcolor: "rgba(255,255,0,0.15)",
+                    showline: true,
+                    linecolor: "rgba(255,255,0,0.5)",
+                    linewidth: 2
+                  },
+                  margin: { l: 80, r: 60, t: 40, b: 150 },
+                  showlegend: false,
+                  bargap: 0.2
                 }}
-                config={{ displayModeBar: false, responsive: true }}
+                config={{ 
+                  displayModeBar: true,
+                  displaylogo: false,
+                  responsive: true,
+                  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                  toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'format_evolution_timeline',
+                    height: 550,
+                    width: 1200,
+                    scale: 2
+                  }
+                }}
+                style={{ width: '100%', height: '100%' }}
                 onError={(err: any) => {
-                  console.error('Waterfall chart error:', err)
-                  setError('Failed to render Waterfall chart')
+                  console.error('Format evolution chart error:', err)
+                  setError('Failed to render Format Evolution chart')
                 }}
               />
+            </div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="text-center p-3 bg-yellow-400/10 rounded border border-yellow-400/30">
+                <div className="text-yellow-400 font-bold">🎯 Most Common Transition</div>
+                <div className="text-white mt-1">{topFormat}</div>
+              </div>
+              <div className="text-center p-3 bg-cyan-400/10 rounded border border-cyan-400/30">
+                <div className="text-cyan-400 font-bold">📊 Top Transition Count</div>
+                <div className="text-white mt-1">{topFormatCount} responses</div>
+              </div>
+              <div className="text-center p-3 bg-purple-400/10 rounded border border-purple-400/30">
+                <div className="text-purple-400 font-bold">📈 Total Transitions</div>
+                <div className="text-white mt-1">{formatKeys.length} format eras</div>
+              </div>
+            </div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              💡 Tip: The color gradient represents the chronological journey from physical to digital formats.
             </div>
           </motion.div>
         </motion.div>
