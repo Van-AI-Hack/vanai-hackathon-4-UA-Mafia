@@ -11,6 +11,7 @@ import NavigationMenu from './components/NavigationMenu'
 import WelcomeBack from './components/WelcomeBack'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import PerformanceMonitor from './components/PerformanceMonitor'
+// Audio test components removed for production
 
 // Data
 import { loadPersonas, loadSurveyData, classifyPersona, Persona, SurveyData } from './utils/dataLoader'
@@ -210,7 +211,16 @@ const App: React.FC = () => {
                 persona={personaResult}
                 surveyData={surveyData}
                 personas={personas}
-                onBackToResult={() => setCurrentState('result')}
+                onBackToResult={() => {
+                  console.log('🔙 Back to Result clicked', { personaResult, currentState })
+                  if (personaResult) {
+                    setCurrentState('result')
+                    // Scroll to top when navigating
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  } else {
+                    console.error('⚠️ No persona result available to navigate back to')
+                  }
+                }}
               />
             </motion.div>
           )}
@@ -221,6 +231,8 @@ const App: React.FC = () => {
 
         {/* Performance Monitor */}
         <PerformanceMonitor />
+
+        {/* Audio test components removed for cleaner UI */}
 
         {/* Loading Overlay */}
         {isLoading && (

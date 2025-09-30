@@ -31,6 +31,7 @@ export interface SurveyData {
   ai_attitudes: Record<string, number>
   listening_habits: Record<string, number>
   format_evolution: Record<string, number>
+  persona_distribution?: Record<string, number>
 }
 
 export interface ChartData {

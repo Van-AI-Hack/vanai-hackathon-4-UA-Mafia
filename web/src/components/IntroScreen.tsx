@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Music, Brain, BarChart3, Users, Zap, Play } from 'lucide-react'
+// import audioManager from '../utils/audioManager'
 
 interface IntroScreenProps {
   onStartQuiz: () => void

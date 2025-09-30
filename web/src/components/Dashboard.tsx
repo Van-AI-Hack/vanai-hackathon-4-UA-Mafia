@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Search, 
   Headphones, 
@@ -9,11 +9,24 @@ import {
   ArrowLeft,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  Filter,
+  X,
+  MapPin,
+  Calendar,
+  User,
+  Target
 } from 'lucide-react'
 import { Persona, SurveyData } from '../utils/dataLoader'
 import RealDataCharts from './RealDataCharts'
 import AIChatInterface from './AIChatInterface'
+
+export interface DashboardFilters {
+  province: string | null
+  ageGroup: string | null
+  persona: string | null
+  highlightUser: boolean
+}
 
 interface DashboardProps {
   persona: Persona | null
@@ -24,6 +37,13 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ persona, surveyData, personas, onBackToResult }) => {
   const [activeTab, setActiveTab] = useState('discovery')
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<DashboardFilters>({
+    province: null,
+    ageGroup: null,
+    persona: null,
+    highlightUser: false
+  })
 
   const tabs = [
     { id: 'discovery', label: 'Discovery Patterns', icon: Search },
@@ -48,12 +68,47 @@ const Dashboard: React.FC<DashboardProps> = ({ persona, surveyData, personas, on
     visible: { opacity: 1, y: 0 }
   }
 
+  // Get available filter options from data
+  const provinces = surveyData?.demographics?.provinces ? Object.keys(surveyData.demographics.provinces) : []
+  const ageGroups = surveyData?.demographics?.age_groups ? Object.keys(surveyData.demographics.age_groups) : []
+  
+  // Filter management
+  const handleFilterChange = (filterType: keyof DashboardFilters, value: any) => {
+    console.log('🎛️ Filter change:', filterType, '=', value)
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        [filterType]: value
+      }
+      console.log('🎛️ New filters state:', newFilters)
+      return newFilters
+    })
+  }
+
+  const clearAllFilters = () => {
+    setFilters({
+      province: null,
+      ageGroup: null,
+      persona: null,
+      highlightUser: false
+    })
+  }
+
+  const activeFilterCount = [
+    filters.province,
+    filters.ageGroup,
+    filters.persona,
+    filters.highlightUser
+  ].filter(Boolean).length
+
   const renderTabContent = () => {
     return (
       <RealDataCharts 
         surveyData={surveyData}
         personas={personas}
         activeTab={activeTab}
+        filters={filters}
+        userPersona={persona}
       />
     )
   }
@@ -480,28 +535,202 @@ const Dashboard: React.FC<DashboardProps> = ({ persona, surveyData, personas, on
 
           {/* Tab Navigation */}
           <motion.div variants={itemVariants}>
-            <div className="flex flex-wrap gap-2 mb-8">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.id
-                return (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${
-                      isActive
-                        ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/30 neon-glow'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50 border border-gray-600'
-                    }`}
-                  >
-                    <tab.icon className="w-5 h-5" />
-                    {tab.label}
-                  </motion.button>
-                )
-              })}
+            <div className="flex justify-between items-start mb-8">
+              <div className="flex flex-wrap gap-2">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id
+                  return (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${
+                        isActive
+                          ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/30 neon-glow'
+                          : 'text-gray-400 hover:text-white hover:bg-gray-800/50 border border-gray-600'
+                      }`}
+                    >
+                      <tab.icon className="w-5 h-5" />
+                      {tab.label}
+                    </motion.button>
+                  )
+                })}
+              </div>
+              
+              {/* Filter Toggle Button */}
+              <motion.button
+                onClick={() => setShowFilters(!showFilters)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${
+                  showFilters || activeFilterCount > 0
+                    ? 'bg-purple-400/20 text-purple-400 border border-purple-400/30'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50 border border-gray-600'
+                }`}
+              >
+                <Filter className="w-5 h-5" />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </motion.button>
             </div>
           </motion.div>
+
+          {/* Filter Panel */}
+          <AnimatePresence mode="wait">
+            {showFilters && (
+              <motion.div
+                key="filter-panel"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-8"
+              >
+                <div className="cyberpunk-card p-6 border-purple-400/30"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Filter className="w-6 h-6 text-purple-400" />
+                      <h3 className="text-xl font-bold text-white">Advanced Filters</h3>
+                      {activeFilterCount > 0 && (
+                        <span className="text-sm text-purple-400">({activeFilterCount} active)</span>
+                      )}
+                    </div>
+                    {activeFilterCount > 0 && (
+                      <motion.button
+                        onClick={clearAllFilters}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 border border-red-400/30 rounded-lg hover:bg-red-400/10"
+                      >
+                        <X className="w-4 h-4" />
+                        Clear All
+                      </motion.button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Province Filter */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                        <MapPin className="w-4 h-4 text-cyan-400" />
+                        Province
+                      </label>
+                      <select
+                        value={filters.province || ''}
+                        onChange={(e) => handleFilterChange('province', e.target.value || null)}
+                        className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-2 focus:border-cyan-400 focus:outline-none"
+                      >
+                        <option value="">All Provinces</option>
+                        {provinces.map(province => (
+                          <option key={province} value={province}>{province}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Age Group Filter */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                        <Calendar className="w-4 h-4 text-green-400" />
+                        Age Group
+                      </label>
+                      <select
+                        value={filters.ageGroup || ''}
+                        onChange={(e) => handleFilterChange('ageGroup', e.target.value || null)}
+                        className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-2 focus:border-cyan-400 focus:outline-none"
+                      >
+                        <option value="">All Ages</option>
+                        {ageGroups.map(age => (
+                          <option key={age} value={age}>{age}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Persona Filter */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                        <User className="w-4 h-4 text-pink-400" />
+                        Persona Type
+                      </label>
+                      <select
+                        value={filters.persona || ''}
+                        onChange={(e) => handleFilterChange('persona', e.target.value || null)}
+                        className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-2 focus:border-cyan-400 focus:outline-none"
+                      >
+                        <option value="">All Personas</option>
+                        {personas.map(p => (
+                          <option key={p.id} value={p.name}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Highlight User Toggle */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                        <Target className="w-4 h-4 text-yellow-400" />
+                        Highlight Mode
+                      </label>
+                      <motion.button
+                        onClick={() => handleFilterChange('highlightUser', !filters.highlightUser)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`w-full px-4 py-2 rounded-lg border transition-all ${
+                          filters.highlightUser
+                            ? 'bg-yellow-400/20 text-yellow-400 border-yellow-400/30'
+                            : 'bg-gray-800 text-gray-400 border-gray-600 hover:border-yellow-400/50'
+                        }`}
+                      >
+                        {filters.highlightUser ? '✓ Show My Stats' : 'Show My Stats'}
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Active Filters Summary */}
+                  {activeFilterCount > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {filters.province && (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-400/20 text-cyan-400 rounded-full text-sm">
+                          📍 {filters.province}
+                          <button onClick={() => handleFilterChange('province', null)} className="hover:text-white">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      )}
+                      {filters.ageGroup && (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-400/20 text-green-400 rounded-full text-sm">
+                          📅 {filters.ageGroup}
+                          <button onClick={() => handleFilterChange('ageGroup', null)} className="hover:text-white">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      )}
+                      {filters.persona && (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-pink-400/20 text-pink-400 rounded-full text-sm">
+                          👤 {filters.persona}
+                          <button onClick={() => handleFilterChange('persona', null)} className="hover:text-white">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      )}
+                      {filters.highlightUser && (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded-full text-sm">
+                          🎯 My Stats Highlighted
+                          <button onClick={() => handleFilterChange('highlightUser', false)} className="hover:text-white">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Tab Content */}
           <motion.div

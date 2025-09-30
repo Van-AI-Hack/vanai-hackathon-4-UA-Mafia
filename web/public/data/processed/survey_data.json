@@ -70,7 +70,14 @@
     "8-tracks to cassette tapes": 75,
     "Digital downloads to streaming (Spotify, Apple Music) 🎧": 66,
     "Illegal downloads to legal digital (iTunes) 🎵": 44,
-    "I haven’t really experienced a big format change": 16,
+    "I haven't really experienced a big format change": 16,
     "Not sure": 13
+  },
+  "persona_distribution": {
+    "The Radio Traditionalist": 223,
+    "The Digital Explorer": 314,
+    "The Casual Listener": 412,
+    "The Music Obsessive": 9,
+    "The AI Skeptic": 48
   }
 }

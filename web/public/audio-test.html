@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 40px;
+            text-align: center;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 8px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .status {
+            margin: 20px;
+            padding: 20px;
+            background: #222;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 BROWSER AUDIO TEST</h1>
+    <div class="status">
+        <h2>Status: <span id="status">Ready</span></h2>
+        <p id="message">Click button to test audio</p>
+    </div>
+    
+    <button onclick="testAudio()">CLICK ME TO HEAR SOUND</button>
+    <button onclick="testLongSound()">LONG SOUND (1 second)</button>
+    <button onclick="testVeryLoudSound()">VERY LOUD SOUND</button>
+    
+    <div class="status">
+        <h3>Instructions:</h3>
+        <ol style="text-align: left; display: inline-block;">
+            <li>Make sure your computer volume is up (50%+)</li>
+            <li>Make sure browser tab is not muted</li>
+            <li>Click any button above</li>
+            <li>You should hear a beep/tone</li>
+        </ol>
+    </div>
+
+    <script>
+        console.log('🔊 Audio test page loaded')
+        
+        function updateStatus(status, message) {
+            document.getElementById('status').textContent = status
+            document.getElementById('message').textContent = message
+        }
+
+        function testAudio() {
+            console.log('🎵 Testing audio...')
+            updateStatus('Testing...', 'Playing 440Hz tone for 0.5 seconds')
+            
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext
+                const ctx = new AudioContext()
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                
+                osc.frequency.value = 440
+                osc.type = 'sine'
+                gain.gain.value = 0.3
+                
+                osc.start()
+                osc.stop(ctx.currentTime + 0.5)
+                
+                console.log('✅ Audio played successfully!')
+                updateStatus('Success!', 'You should hear a 440Hz tone')
+                
+                setTimeout(() => {
+                    updateStatus('Ready', 'Test again or try different buttons')
+                }, 1000)
+            } catch (err) {
+                console.error('❌ Error:', err)
+                updateStatus('ERROR', err.message)
+            }
+        }
+
+        function testLongSound() {
+            console.log('🎵 Testing LONG audio...')
+            updateStatus('Testing...', 'Playing 880Hz tone for 1 second')
+            
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext
+                const ctx = new AudioContext()
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                
+                osc.frequency.value = 880
+                osc.type = 'sine'
+                gain.gain.value = 0.3
+                
+                osc.start()
+                osc.stop(ctx.currentTime + 1.0)
+                
+                console.log('✅ Long audio played!')
+                updateStatus('Success!', 'You should hear a HIGH tone for 1 second')
+                
+                setTimeout(() => {
+                    updateStatus('Ready', 'Test again or try different buttons')
+                }, 1500)
+            } catch (err) {
+                console.error('❌ Error:', err)
+                updateStatus('ERROR', err.message)
+            }
+        }
+
+        function testVeryLoudSound() {
+            console.log('🎵 Testing VERY LOUD audio...')
+            updateStatus('Testing...', 'Playing LOUD 1000Hz tone')
+            
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext
+                const ctx = new AudioContext()
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                
+                osc.frequency.value = 1000
+                osc.type = 'sine'
+                gain.gain.value = 0.8  // LOUD!
+                
+                osc.start()
+                osc.stop(ctx.currentTime + 0.5)
+                
+                console.log('✅ LOUD audio played!')
+                updateStatus('Success!', 'You should have heard a LOUD beep!')
+                
+                setTimeout(() => {
+                    updateStatus('Ready', 'Test again or try different buttons')
+                }, 1000)
+            } catch (err) {
+                console.error('❌ Error:', err)
+                updateStatus('ERROR', err.message)
+            }
+        }
+
+        // Auto-check on page load
+        console.log('Checking audio support...')
+        if (window.AudioContext || window.webkitAudioContext) {
+            console.log('✅ Web Audio API is supported!')
+            updateStatus('Ready', 'Web Audio API supported! Click button to test.')
+        } else {
+            console.error('❌ Web Audio API is NOT supported!')
+            updateStatus('ERROR', 'Your browser does not support Web Audio API')
+        }
+    </script>
+</body>
+</html>

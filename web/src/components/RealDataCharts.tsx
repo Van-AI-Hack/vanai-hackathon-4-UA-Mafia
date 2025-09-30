@@ -2,14 +2,23 @@ import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Plot from 'react-plotly.js'
 import { Persona, SurveyData } from '../utils/dataLoader'
+import { DashboardFilters } from './Dashboard'
 
 interface RealDataChartsProps {
   surveyData: SurveyData | null
   personas: Persona[]
   activeTab: string
+  filters?: DashboardFilters
+  userPersona?: Persona | null
 }
 
-const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, activeTab }) => {
+const RealDataCharts: React.FC<RealDataChartsProps> = ({ 
+  surveyData, 
+  personas, 
+  activeTab,
+  filters,
+  userPersona: _userPersona // Reserved for future use in data highlighting
+}) => {
   const [chartKey, setChartKey] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +34,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
     useSimpleCharts
   })
   
-  // Force re-render when activeTab changes
+  // Force re-render when activeTab or filters change
   useEffect(() => {
     setIsLoading(true)
     setError(null)
@@ -37,7 +46,210 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
     }, 200)
     
     return () => clearTimeout(timer)
-  }, [activeTab])
+  }, [activeTab, filters])
+  
+  // Check if any filters are active
+  const hasActiveFilters = filters && (
+    filters.province || 
+    filters.ageGroup || 
+    filters.persona || 
+    filters.highlightUser
+  )
+
+  // Apply filters to survey data
+  const getFilteredData = () => {
+    if (!surveyData || !filters) {
+      console.log('⚠️ No filtering: missing surveyData or filters')
+      return surveyData
+    }
+    if (!filters.province && !filters.ageGroup && !filters.persona) {
+      console.log('⚠️ No active filters')
+      return surveyData
+    }
+
+    console.log('📊 Applying filters:', filters)
+    console.log('📊 Available provinces:', surveyData?.demographics?.provinces ? Object.keys(surveyData.demographics.provinces) : 'none')
+    console.log('📊 Available age groups:', surveyData?.demographics?.age_groups ? Object.keys(surveyData.demographics.age_groups) : 'none')
+    console.log('📊 Available personas:', surveyData?.persona_distribution ? Object.keys(surveyData.persona_distribution) : 'none')
+
+    // Clone the survey data
+    const filtered = JSON.parse(JSON.stringify(surveyData))
+
+    // Calculate filter multiplier based on demographics
+    let multiplier = 1.0
+
+    if (filters.province && filtered.demographics.provinces) {
+      const provinceCount = filtered.demographics.provinces[filters.province] || 0
+      const totalProvinceResponses = Object.values(filtered.demographics.provinces).reduce((a, b) => (a as number) + (b as number), 0) as number
+      multiplier *= (provinceCount / totalProvinceResponses)
+      console.log(`🔍 Province filter: ${filters.province}, count: ${provinceCount}, total: ${totalProvinceResponses}, multiplier: ${multiplier}`)
+    }
+
+    if (filters.ageGroup && filtered.demographics.age_groups) {
+      const ageCount = filtered.demographics.age_groups[filters.ageGroup] || 0
+      const totalAgeResponses = Object.values(filtered.demographics.age_groups).reduce((a, b) => (a as number) + (b as number), 0) as number
+      const oldMultiplier = multiplier
+      multiplier *= (ageCount / totalAgeResponses)
+      console.log(`🔍 Age filter: ${filters.ageGroup}, count: ${ageCount}, total: ${totalAgeResponses}, new multiplier: ${multiplier} (was ${oldMultiplier})`)
+    }
+
+    // Persona filter
+    if (filters.persona && surveyData.persona_distribution) {
+      const personaCount = surveyData.persona_distribution[filters.persona] || 0
+      const totalPersonaResponses = Object.values(surveyData.persona_distribution).reduce((a, b) => (a as number) + (b as number), 0) as number
+      const oldMultiplier = multiplier
+      multiplier *= (personaCount / totalPersonaResponses)
+      console.log(`🔍 Persona filter: ${filters.persona}, count: ${personaCount}, total: ${totalPersonaResponses}, new multiplier: ${multiplier} (was ${oldMultiplier})`)
+    }
+
+    // Apply multiplier to all data proportionally - NO ROUNDING to preserve exactness
+    const applyMultiplier = (obj: any): any => {
+      const result: any = {}
+      for (const key in obj) {
+        if (typeof obj[key] === 'number') {
+          // Store exact value, don't round yet
+          result[key] = obj[key] * multiplier
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          result[key] = applyMultiplier(obj[key])
+        } else {
+          result[key] = obj[key]
+        }
+      }
+      return result
+    }
+
+    // Apply to all data sections
+    filtered.discovery_methods = applyMultiplier(filtered.discovery_methods)
+    filtered.music_relationship = applyMultiplier(filtered.music_relationship)
+    filtered.ai_attitudes = applyMultiplier(filtered.ai_attitudes)
+    filtered.listening_habits = applyMultiplier(filtered.listening_habits)
+    filtered.format_evolution = applyMultiplier(filtered.format_evolution)
+    
+    // For demographics: 
+    // - If filtering BY province only, show only that province
+    // - If filtering BY age/persona only, apply multiplier to all provinces
+    // - If filtering BY multiple criteria, apply multiplier to all provinces (show intersection)
+    console.log('🔍 Province filtering logic:', {
+      hasProvince: !!filters.province,
+      hasAgeGroup: !!filters.ageGroup,
+      hasPersona: !!filters.persona,
+      provinceValue: filters.province,
+      ageGroupValue: filters.ageGroup,
+      personaValue: filters.persona,
+      provinceType: typeof filters.province,
+      ageGroupType: typeof filters.ageGroup,
+      personaType: typeof filters.persona,
+      provinceIsNull: filters.province === null,
+      ageGroupIsNull: filters.ageGroup === null,
+      personaIsNull: filters.persona === null
+    })
+    
+    // Province filtering logic
+    if (filtered.demographics?.provinces) {
+      const hasProvince = filters.province !== null && filters.province !== undefined
+      const hasAge = filters.ageGroup !== null && filters.ageGroup !== undefined
+      const hasPersona = filters.persona !== null && filters.persona !== undefined
+      
+      if (hasProvince && filters.province) {
+        // If province filter is active, ALWAYS show only that province
+        if (hasAge || hasPersona) {
+          // Province + other filters - first apply multiplier to all, then extract selected province
+          console.log(`🎯 Province + other filters: showing only ${filters.province} with scaled value`)
+          const scaledProvinces = applyMultiplier(filtered.demographics.provinces)
+          const scaledValue = Math.round(scaledProvinces[filters.province] || 0)
+          filtered.demographics.provinces = {
+            [filters.province]: scaledValue
+          }
+        } else {
+          // Only province filter - show just that province with original count
+          const baseProvinceCount = surveyData.demographics.provinces[filters.province] || 0
+          console.log(`🎯 Province-only filter: showing only ${filters.province} with ${baseProvinceCount} responses`)
+          filtered.demographics.provinces = {
+            [filters.province]: baseProvinceCount
+          }
+        }
+      } else if ((hasAge || hasPersona) && !hasProvince) {
+        // Age/persona only - apply multiplier to all provinces
+        console.log('🎯 Age/persona-only filter: scaling all provinces')
+        filtered.demographics.provinces = applyMultiplier(filtered.demographics.provinces)
+      } else {
+        console.log('🎯 No province filtering applied')
+      }
+    }
+    
+    // Age groups filtering logic
+    if (filtered.demographics?.age_groups) {
+      const hasProvince = filters.province !== null && filters.province !== undefined
+      const hasAge = filters.ageGroup !== null && filters.ageGroup !== undefined
+      const hasPersona = filters.persona !== null && filters.persona !== undefined
+      
+      if (hasAge && (hasProvince || hasPersona)) {
+        // Age + other filters - apply multiplier to all age groups
+        filtered.demographics.age_groups = applyMultiplier(filtered.demographics.age_groups)
+      } else if (hasAge && !hasProvince && !hasPersona && filters.ageGroup) {
+        // Only age filter - show just that age group
+        const selectedAgeCount = surveyData.demographics.age_groups[filters.ageGroup] || 0
+        filtered.demographics.age_groups = {
+          [filters.ageGroup]: selectedAgeCount
+        }
+      } else if ((hasProvince || hasPersona) && !hasAge) {
+        // Province/persona only - apply multiplier to all age groups
+        filtered.demographics.age_groups = applyMultiplier(filtered.demographics.age_groups)
+      }
+    }
+    
+    // Persona distribution filtering logic
+    if (filtered.persona_distribution && surveyData.persona_distribution) {
+      const hasProvince = filters.province !== null && filters.province !== undefined
+      const hasAge = filters.ageGroup !== null && filters.ageGroup !== undefined
+      const hasPersona = filters.persona !== null && filters.persona !== undefined
+      
+      if (hasPersona && (hasProvince || hasAge)) {
+        // Persona + other filters - apply multiplier to all personas
+        filtered.persona_distribution = applyMultiplier(filtered.persona_distribution)
+      } else if (hasPersona && !hasProvince && !hasAge && filters.persona) {
+        // Only persona filter - show just that persona
+        const selectedPersonaCount = surveyData.persona_distribution[filters.persona] || 0
+        filtered.persona_distribution = {
+          [filters.persona]: selectedPersonaCount
+        }
+      } else if ((hasProvince || hasAge) && !hasPersona) {
+        // Province/age only - apply multiplier to all personas
+        filtered.persona_distribution = applyMultiplier(filtered.persona_distribution)
+      }
+    }
+    
+    // Update total responses (exact calculation, then round)
+    filtered.total_responses = Math.round(filtered.total_responses * multiplier)
+    
+    console.log(`✅ Final multiplier: ${multiplier}, Total responses: ${filtered.total_responses}`)
+    
+    // Debug: Log the final filtered data structure
+    console.log('🔍 Final filtered data:', {
+      total_responses: filtered.total_responses,
+      provinces: filtered.demographics?.provinces,
+      age_groups: filtered.demographics?.age_groups,
+      persona_distribution: filtered.persona_distribution,
+      ai_attitudes: Object.keys(filtered.ai_attitudes || {}).length > 0 ? 'has data' : 'empty',
+      discovery_methods: Object.keys(filtered.discovery_methods || {}).length > 0 ? 'has data' : 'empty'
+    })
+
+    return filtered
+  }
+
+  const filteredData = getFilteredData()
+  
+  // Create unique key based on filters to force chart updates
+  const filterKey = `${filters?.province || 'all'}-${filters?.ageGroup || 'all'}-${filters?.persona || 'all'}-${chartKey}`
+  
+  // Debug log for filtering
+  console.log('🔍 Filtering:', { 
+    filters, 
+    hasActiveFilters, 
+    originalTotal: surveyData?.total_responses,
+    filteredTotal: filteredData?.total_responses,
+    filterKey 
+  })
   
   if (!surveyData) {
     return (
@@ -59,6 +271,49 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         animate={{ opacity: 1 }}
       >
         <div className="text-cyan-400">Loading charts...</div>
+      </motion.div>
+    )
+  }
+
+  // Filter indicator banner
+  const FilterBanner = () => {
+    if (!hasActiveFilters) return null
+    
+    const originalTotal = surveyData?.total_responses || 0
+    const filteredTotal = filteredData?.total_responses || 0
+    const percentage = originalTotal > 0 ? ((filteredTotal / originalTotal) * 100).toFixed(1) : 0
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 p-4 bg-gradient-to-r from-purple-400/10 to-cyan-400/10 border border-purple-400/30 rounded-lg"
+      >
+        <div className="flex items-start gap-3">
+          <div className="text-purple-400 mt-1 text-2xl">🔍</div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-white font-semibold">Filtered View Active</h4>
+              <div className="text-right">
+                <div className="text-cyan-400 font-bold text-lg">
+                  {filteredTotal} <span className="text-gray-500 text-sm">of</span> {originalTotal}
+                </div>
+                <div className="text-xs text-gray-400">({percentage}% of responses)</div>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">
+                {filters?.province && `📍 ${filters.province} • `}
+                {filters?.ageGroup && `📅 ${filters.ageGroup} • `}
+                {filters?.persona && `👤 ${filters.persona} • `}
+                {filters?.highlightUser && "🎯 Your stats highlighted"}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                ℹ️ Individual charts may show slightly different counts as not all respondents answered every question
+              </p>
+            </div>
+          </div>
+        </div>
       </motion.div>
     )
   }
@@ -111,7 +366,8 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       font: { color: '#ffffff' },
       bgcolor: 'rgba(0,0,0,0.5)',
       bordercolor: 'rgba(255,255,255,0.2)'
-    }
+    },
+    datarevision: chartKey  // Force Plotly to redraw when filters change
   })
 
   // Simple chart fallback
@@ -159,7 +415,11 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
   // Render functions - all as regular functions, no hooks
   const renderDiscoveryPatterns = () => {
     try {
-      const discoveryData = surveyData.discovery_methods || {}
+      const discoveryData = filteredData.discovery_methods || {}
+      console.log('🔍 Discovery chart data:', { 
+        totalDiscovery: Object.values(discoveryData).reduce((a, b) => (a as number) + (b as number), 0),
+        methods: Object.keys(discoveryData).length 
+      })
 
       if (useSimpleCharts) {
         return (
@@ -173,11 +433,14 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       // Enhanced Sankey diagram with better flow visualization
       const discoveryKeys = Object.keys(discoveryData)
       const discoveryValues = Object.values(discoveryData) as number[]
-      const totalDiscovery = discoveryValues.reduce((a, b) => a + b, 0)
+      // Round float values for display - sum of rounded values
+      const roundedValues = discoveryValues.map(v => Math.round(v))
+      const totalDiscovery = roundedValues.reduce((a, b) => a + b, 0)
       
-      // Create age group distribution (simplified for visualization)
-      const ageGroups = ['18-34', '35-54', '55+']
-      const ageDistribution = [264, 331, 411] // From actual data
+      // Create age group distribution from filtered data
+      const ageGroupData = filteredData.demographics?.age_groups || {}
+      const ageGroups = Object.keys(ageGroupData)
+      const ageDistribution = Object.values(ageGroupData).map(v => Math.round(v as number))
       
       // Create meaningful flow: Discovery Methods → Age Groups → Music Relationship
       const allLabels = [
@@ -202,11 +465,12 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       const linkColors: string[] = []
       
       // Link discovery methods to age groups (proportional distribution)
+      const totalAgeResponses = ageDistribution.reduce((a, b) => a + b, 0)
       discoveryKeys.forEach((_, methodIdx) => {
-        const methodValue = discoveryValues[methodIdx]
+        const methodValue = roundedValues[methodIdx]
         ageGroups.forEach((_, ageIdx) => {
           const ageTargetIdx = discoveryKeys.length + ageIdx
-          const flowValue = Math.round(methodValue * (ageDistribution[ageIdx] / totalDiscovery))
+          const flowValue = Math.round(methodValue * (ageDistribution[ageIdx] / totalAgeResponses))
           
           if (flowValue > 5) { // Only show significant flows
             sources.push(methodIdx)
@@ -217,23 +481,39 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         })
       })
       
-      // Link age groups to music relationship
+      // Link age groups to music relationship using actual filtered data
+      const musicRelationshipData = filteredData.music_relationship || {}
+      const musicRelationshipValues = Object.values(musicRelationshipData).map(v => Math.round(v as number))
+      const totalMusicResponses = musicRelationshipValues.reduce((a, b) => a + b, 0)
+      
       ageGroups.forEach((_, ageIdx) => {
         const ageSourceIdx = discoveryKeys.length + ageIdx
         const strongConnectionIdx = allLabels.length - 2
         const casualListenerIdx = allLabels.length - 1
         
-        // Distribute to relationship types (70% strong, 30% casual for variety)
+        // Distribute to relationship types based on actual proportions
         const ageValue = ageDistribution[ageIdx]
-        sources.push(ageSourceIdx)
-        targets.push(strongConnectionIdx)
-        values.push(Math.round(ageValue * 0.7))
-        linkColors.push(`${nodeColors[discoveryKeys.length + ageIdx]}40`)
+        const strongRatio = totalMusicResponses > 0 ? 
+          (musicRelationshipValues[0] || 0) / totalMusicResponses : 0.7
+        const casualRatio = totalMusicResponses > 0 ? 
+          (musicRelationshipValues[1] || 0) / totalMusicResponses : 0.3
         
-        sources.push(ageSourceIdx)
-        targets.push(casualListenerIdx)
-        values.push(Math.round(ageValue * 0.3))
-        linkColors.push(`${nodeColors[discoveryKeys.length + ageIdx]}30`)
+        const strongValue = Math.round(ageValue * strongRatio)
+        const casualValue = Math.round(ageValue * casualRatio)
+        
+        if (strongValue > 0) {
+          sources.push(ageSourceIdx)
+          targets.push(strongConnectionIdx)
+          values.push(strongValue)
+          linkColors.push(`${nodeColors[discoveryKeys.length + ageIdx]}40`)
+        }
+        
+        if (casualValue > 0) {
+          sources.push(ageSourceIdx)
+          targets.push(casualListenerIdx)
+          values.push(casualValue)
+          linkColors.push(`${nodeColors[discoveryKeys.length + ageIdx]}30`)
+        }
       })
 
       const sankeyData = {
@@ -250,7 +530,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           label: allLabels.map((label, idx) => {
             // Add counts/percentages to labels
             if (idx < discoveryKeys.length) {
-              const count = discoveryValues[idx]
+              const count = roundedValues[idx]
               const pct = ((count / totalDiscovery) * 100).toFixed(1)
               return `${label}<br>${count} (${pct}%)`
             } else if (idx < discoveryKeys.length + ageGroups.length) {
@@ -289,14 +569,18 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-bold text-white">🌊 Discovery Method Flow</h4>
-              <span className="text-sm text-cyan-400 font-semibold">{totalDiscovery} total discovery responses</span>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
+                <span className="text-sm text-cyan-400 font-semibold">{totalDiscovery} responses</span>
+              </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               Interactive flow diagram showing how different age groups discover music through various methods
+              {hasActiveFilters && <span className="text-purple-400"> (showing filtered subset)</span>}
             </p>
             <div className="h-[600px] rounded-lg overflow-hidden border border-cyan-400/30">
               <Plot
-                key={`sankey-${chartKey}`}
+                key={`sankey-${filterKey}`}
                 data={[sankeyData]}
                 layout={{
                   ...getBaseLayout(""),
@@ -308,6 +592,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                     family: 'Arial, sans-serif'
                   }
                 }}
+                revision={chartKey}
                 config={{ 
                   displayModeBar: true,
                   displaylogo: false,
@@ -365,17 +650,22 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
   const renderListeningBehavior = () => {
     try {
-      const musicRelationship = surveyData.music_relationship || {}
+      const musicRelationship = filteredData.music_relationship || {}
+      console.log('🔍 Listening chart data:', { 
+        totalResponses: Object.values(musicRelationship).reduce((a, b) => (a as number) + (b as number), 0),
+        categories: Object.keys(musicRelationship).length 
+      })
 
       if (useSimpleCharts) {
-        // Create meaningful labels for simple charts
+        // Create meaningful labels for simple charts - USE FILTERED DATA
+        const listeningHabits = filteredData.listening_habits || {}
         const meaningfulListeningData = {
-          "Commuting": 201,
-          "Working/Studying": 742,
-          "Exercise": 604,
-          "Relaxation": 347,
-          "Social Events": 491,
-          "Background": 341
+          "Commuting": listeningHabits["Q8_Music_listen_time_GRID_1"] || 0,
+          "Working/Studying": listeningHabits["Q8_Music_listen_time_GRID_2"] || 0,
+          "Exercise": listeningHabits["Q8_Music_listen_time_GRID_3"] || 0,
+          "Relaxation": listeningHabits["Q8_Music_listen_time_GRID_4"] || 0,
+          "Social Events": listeningHabits["Q8_Music_listen_time_GRID_5"] || 0,
+          "Background": listeningHabits["Q8_Music_listen_time_GRID_6"] || 0
         }
 
         return (
@@ -387,15 +677,18 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         )
       }
 
-      // Create meaningful data for bubble chart with better positioning and spacing
+      // Create meaningful data for bubble chart with better positioning and spacing - USE FILTERED DATA!
+      const listeningHabits = filteredData.listening_habits || {}
       const listeningActivities = [
-        { name: "Commuting", count: 201, intensity: 75, category: "Daily", x: 0, y: 201 },
-        { name: "Working/Studying", count: 742, intensity: 85, category: "Productive", x: 1, y: 742 },
-        { name: "Exercise", count: 604, intensity: 90, category: "Active", x: 2, y: 604 },
-        { name: "Relaxation", count: 347, intensity: 65, category: "Leisure", x: 3, y: 347 },
-        { name: "Social Events", count: 491, intensity: 60, category: "Social", x: 4, y: 491 },
-        { name: "Background", count: 341, intensity: 50, category: "Ambient", x: 5, y: 341 }
-      ]
+        { name: "Commuting", count: Math.round(listeningHabits["Q8_Music_listen_time_GRID_1"] || 0), intensity: 75, category: "Daily", x: 0 },
+        { name: "Working/Studying", count: Math.round(listeningHabits["Q8_Music_listen_time_GRID_2"] || 0), intensity: 85, category: "Productive", x: 1 },
+        { name: "Exercise", count: Math.round(listeningHabits["Q8_Music_listen_time_GRID_3"] || 0), intensity: 90, category: "Active", x: 2 },
+        { name: "Relaxation", count: Math.round(listeningHabits["Q8_Music_listen_time_GRID_4"] || 0), intensity: 65, category: "Leisure", x: 3 },
+        { name: "Social Events", count: Math.round(listeningHabits["Q8_Music_listen_time_GRID_5"] || 0), intensity: 60, category: "Social", x: 4 },
+        { name: "Background", count: Math.round(listeningHabits["Q8_Music_listen_time_GRID_6"] || 0), intensity: 50, category: "Ambient", x: 5 }
+      ].map(activity => ({ ...activity, y: activity.count }))
+      
+      console.log('📊 Bubble chart activities (using correct keys):', listeningActivities)
 
       // Create explicit bubble chart data
       const bubbleData = {
@@ -456,7 +749,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           line: { color: "#ffffff", width: 2 }
         },
         hovertemplate: "<b>%{text}</b><br>Responses: %{y}<br>Percentage: %{customdata}%<extra></extra>",
-        customdata: Object.values(musicRelationship).map(val => ((val as number) / (surveyData.total_responses || 1006) * 100).toFixed(1)),
+        customdata: Object.values(musicRelationship).map(val => ((val as number) / (filteredData.total_responses || 1006) * 100).toFixed(1)),
         name: "Music Relationship"
       }
 
@@ -468,14 +761,18 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-bold text-white">🫧 Listening Activities by Intensity</h4>
-              <span className="text-sm text-cyan-400 font-semibold">Multi-metric visualization</span>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
+                <span className="text-sm text-cyan-400 font-semibold">Multi-metric</span>
+              </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               Bubble size represents number of responses, color indicates listening intensity
+              {hasActiveFilters && <span className="text-purple-400"> (showing filtered subset)</span>}
             </p>
             <div className="h-[550px] rounded-lg overflow-hidden border border-cyan-400/30">
               <Plot
-                key={`bubble-${chartKey}`}
+                key={`bubble-${filterKey}`}
                 data={[bubbleData]}
                 layout={{
                   ...getBaseLayout(""),
@@ -509,6 +806,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                   margin: { l: 80, r: 120, t: 40, b: 120 },
                   showlegend: false
                 }}
+                revision={chartKey}
                 config={{ 
                   displayModeBar: true,
                   displaylogo: false,
@@ -549,14 +847,18 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-bold text-white">💗 Music Relationship Patterns</h4>
-              <span className="text-sm text-cyan-400 font-semibold">{Object.values(musicRelationship).reduce((a, b) => a + (b as number), 0)} responses</span>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
+                <span className="text-sm text-cyan-400 font-semibold">{Number(Object.values(musicRelationship).reduce((a, b) => (a as number) + (b as number), 0))} responses</span>
+              </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               How Canadians describe their personal connection to music
+              {hasActiveFilters && <span className="text-purple-400"> (showing filtered subset)</span>}
             </p>
             <div className="h-[450px] rounded-lg overflow-hidden border border-pink-400/30">
               <Plot
-                key={`relationship-${chartKey}`}
+                key={`relationship-${filterKey}`}
                 data={[relationshipData]}
                 layout={{
                   ...getBaseLayout(""),
@@ -583,6 +885,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                   },
                   margin: { l: 80, r: 80, t: 40, b: 150 }
                 }}
+                revision={chartKey}
                 config={{ 
                   displayModeBar: true,
                   displaylogo: false,
@@ -626,7 +929,11 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
   const renderAIAttitudes = () => {
     try {
-      const aiData = surveyData.ai_attitudes || {}
+      const aiData = filteredData.ai_attitudes || {}
+      console.log('🔍 AI Attitudes chart data:', { 
+        totalAI: Object.values(aiData).reduce((a, b) => (a as number) + (b as number), 0),
+        attitudes: Object.keys(aiData).length 
+      })
 
       if (useSimpleCharts) {
         return (
@@ -640,7 +947,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       // Enhanced donut chart with better visuals
       const aiKeys = Object.keys(aiData)
       const aiValues = Object.values(aiData) as number[]
-      const totalAI = aiValues.reduce((a, b) => a + b, 0)
+      const totalAI = Math.round(aiValues.reduce((a, b) => a + b, 0))
       
       const donutData = {
         type: "pie" as const,
@@ -679,14 +986,18 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-bold text-white">🍩 AI Attitudes Distribution</h4>
-              <span className="text-sm text-cyan-400 font-semibold">{totalAI} total responses</span>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
+                <span className="text-sm text-cyan-400 font-semibold">{totalAI} responses</span>
+              </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               Canadian perspectives on AI-generated music and its future in the industry
+              {hasActiveFilters && <span className="text-purple-400"> (showing filtered subset)</span>}
             </p>
             <div className="h-[550px] rounded-lg overflow-hidden border border-green-400/30">
               <Plot
-                key={`donut-${chartKey}`}
+                key={`donut-${filterKey}`}
                 data={[donutData]}
                 layout={{
                   ...getBaseLayout(""),
@@ -708,6 +1019,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                   }],
                   margin: { l: 40, r: 40, t: 40, b: 100 }
                 }}
+                revision={chartKey}
                 config={{ 
                   displayModeBar: true,
                   displaylogo: false,
@@ -765,7 +1077,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
   const renderDemographics = () => {
     try {
-      const demographics = surveyData.demographics || {}
+      const demographics = filteredData.demographics || {}
       const ageGroups = demographics.age_groups || {}
       const provinces = demographics.provinces || {}
 
@@ -782,18 +1094,36 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       // Advanced treemap with enhanced visuals
       const provinceKeys = Object.keys(provinces)
       const provinceValues = Object.values(provinces) as number[]
-      const totalResponses = provinceValues.reduce((a, b) => a + b, 0)
+      // Round float values for display
+      const roundedProvinceValues = provinceValues.map(v => Math.round(v))
+      const totalResponses = roundedProvinceValues.reduce((a, b) => a + b, 0)
       
-      // Calculate percentages and create custom labels
-      const customLabels = provinceKeys.map((province, i) => {
-        const count = provinceValues[i]
+      console.log('🔍 Treemap input data:', {
+        provinces: provinces,
+        provinceKeys: provinceKeys,
+        provinceValues: provinceValues,
+        roundedProvinceValues: roundedProvinceValues
+      })
+      
+      console.log('📊 Treemap data:', { 
+        provinceKeys, 
+        roundedProvinceValues, 
+        totalResponses,
+        originalProvinces: surveyData?.demographics?.provinces,
+        filteredProvinces: filteredData.demographics?.provinces,
+        activeFilters: { province: filters?.province, ageGroup: filters?.ageGroup, persona: filters?.persona }
+      })
+      
+      // Calculate percentages and create custom labels (without province name to avoid duplication)
+      const customLabels = provinceKeys.map((_, i) => {
+        const count = roundedProvinceValues[i]
         const percentage = ((count / totalResponses) * 100).toFixed(1)
-        return `${province}<br>${count} (${percentage}%)`
+        return `${count} (${percentage}%)`
       })
 
       // Create custom colors for each province (cyberpunk gradient)
-      const provinceColors = provinceValues.map((value) => {
-        const intensity = value / Math.max(...provinceValues)
+      const provinceColors = roundedProvinceValues.map((value) => {
+        const intensity = value / Math.max(...roundedProvinceValues)
         return `rgba(0, 255, 255, ${0.3 + intensity * 0.7})` // Cyan with varying opacity
       })
 
@@ -801,7 +1131,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         type: "treemap" as const,
         labels: provinceKeys,
         parents: provinceKeys.map(() => "Canada"),
-        values: provinceValues,
+        values: roundedProvinceValues,
         text: customLabels,
         textposition: "middle center",
         textfont: {
@@ -842,15 +1172,29 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
               <h4 className="text-xl font-bold text-white">🗺️ Provincial Distribution Treemap</h4>
               <div className="text-right">
                 <span className="text-sm text-cyan-400 font-semibold">{totalResponses} responses with province data</span>
-                <p className="text-xs text-gray-500">({surveyData.total_responses} total survey responses)</p>
+                <p className="text-xs text-gray-500">({filteredData.total_responses} total survey responses)</p>
               </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
-              Interactive visualization of Canadian music survey respondents by province. {surveyData.total_responses - totalResponses} respondents did not provide province information.
+              {(() => {
+                const hasProvince = filters?.province !== null && filters?.province !== undefined
+                const hasAge = filters?.ageGroup !== null && filters?.ageGroup !== undefined
+                const hasPersona = filters?.persona !== null && filters?.persona !== undefined
+                
+                if (hasProvince) {
+                  // If province filter is active, always show "only that province" message
+                  const filterDesc = (hasAge || hasPersona) ? ' (filtered by selected criteria)' : ''
+                  return `Showing ${filters.province} respondents only${filterDesc} (${totalResponses} responses).`
+                } else if (hasAge || hasPersona) {
+                  return `Showing all provinces filtered by selected criteria (${totalResponses} responses with province data from ${filteredData.total_responses} total filtered responses).`
+                } else {
+                  return `Interactive visualization of Canadian music survey respondents by province. ${filteredData.total_responses - totalResponses} respondents did not provide province information.`
+                }
+              })()}
             </p>
             <div className="h-[500px] rounded-lg overflow-hidden border border-cyan-400/30">
               <Plot
-                key={`treemap-${chartKey}`}
+                key={`treemap-${filterKey}`}
                 data={[treemapData]}
                 layout={{
                   ...getBaseLayout(""),
@@ -858,6 +1202,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                   margin: { t: 30, l: 5, r: 5, b: 5 },
                   treemapcolorway: ['#00ffff', '#ff00ff', '#ffff00', '#00ff00'],
                 }}
+                revision={chartKey}
                 config={{ 
                   displayModeBar: true,
                   displaylogo: false,
@@ -901,7 +1246,11 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
   const renderFormatEvolution = () => {
     try {
-      const formatData = surveyData.format_evolution || {}
+      const formatData = filteredData.format_evolution || {}
+      console.log('🔍 Format Evolution chart data:', { 
+        totalFormat: Object.values(formatData).reduce((a, b) => (a as number) + (b as number), 0),
+        formats: Object.keys(formatData).length 
+      })
 
       if (useSimpleCharts) {
         return (
@@ -915,15 +1264,32 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
       // Enhanced format evolution with bar chart (waterfall can be tricky)
       const formatKeys = Object.keys(formatData)
       const formatValues = Object.values(formatData) as number[]
-      const totalFormat = formatValues.reduce((a, b) => a + b, 0)
+      // Round float values for display
+      const roundedFormatValues = formatValues.map(v => Math.round(v))
+      const totalFormat = roundedFormatValues.reduce((a, b) => a + b, 0)
+      
+      // Shorten long labels for better display
+      const shortenedLabels = formatKeys.map(key => {
+        if (key.length > 30) {
+          return key
+            .replace('Digital downloads to streaming (Spotify, Apple Music) 🎧', 'Downloads → Streaming 🎧')
+            .replace('CDs to illegal downloads (Napster, LimeWire) 💻', 'CDs → Downloads 💻')
+            .replace('Illegal downloads to legal digital (iTunes) 🎵', 'Illegal → iTunes 🎵')
+            .replace('8-tracks to cassette tapes', '8-tracks → Cassettes')
+            .replace('Vinyl to 8-tracks', 'Vinyl → 8-tracks')
+            .replace('Cassettes to CDs 💿', 'Cassettes → CDs 💿')
+            .replace("I haven't really experienced a big format change", "No big change")
+        }
+        return key
+      })
       
       // Create a beautiful stacked/grouped visualization
       const formatBarData = {
         type: "bar" as const,
-        x: formatKeys,
-        y: formatValues,
+        x: shortenedLabels,
+        y: roundedFormatValues,
         marker: {
-          color: formatValues,
+          color: roundedFormatValues,
           colorscale: [
             [0, '#ff6b6b'],
             [0.25, '#4ecdc4'],
@@ -937,7 +1303,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
             width: 2
           }
         },
-        text: formatValues.map((val) => {
+        text: roundedFormatValues.map((val) => {
           const pct = ((val / totalFormat) * 100).toFixed(1)
           return `${val}<br>(${pct}%)`
         }),
@@ -948,11 +1314,11 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           weight: 'bold'
         },
         hovertemplate: '<b>%{x}</b><br>Responses: %{y}<br>Percentage: %{customdata}%<extra></extra>',
-        customdata: formatValues.map(val => ((val / totalFormat) * 100).toFixed(1))
+        customdata: roundedFormatValues.map(val => ((val / totalFormat) * 100).toFixed(1))
       }
 
-      const topFormat = formatKeys[formatValues.indexOf(Math.max(...formatValues))]
-      const topFormatCount = Math.max(...formatValues)
+      const topFormat = formatKeys[roundedFormatValues.indexOf(Math.max(...roundedFormatValues))]
+      const topFormatCount = Math.max(...roundedFormatValues)
 
       return (
         <motion.div variants={itemVariants} className="space-y-8">
@@ -962,14 +1328,18 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-bold text-white">💿 Format Evolution Timeline</h4>
-              <span className="text-sm text-cyan-400 font-semibold">{totalFormat} format transitions</span>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
+                <span className="text-sm text-cyan-400 font-semibold">{totalFormat} transitions</span>
+              </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               How Canadians experienced the evolution of music formats from physical to digital
+              {hasActiveFilters && <span className="text-purple-400"> (showing filtered subset)</span>}
             </p>
             <div className="h-[550px] rounded-lg overflow-hidden border border-yellow-400/30">
               <Plot
-                key={`format-${chartKey}`}
+                key={`format-${filterKey}`}
                 data={[formatBarData]}
                 layout={{
                   ...getBaseLayout(""),
@@ -979,10 +1349,11 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                     titlefont: { size: 14, color: '#ffff00' },
                     tickangle: -45,
                     showgrid: false,
-                    tickfont: { size: 11, color: '#ffffff' },
+                    tickfont: { size: 9, color: '#ffffff' },
                     showline: true,
                     linecolor: "rgba(255,255,0,0.5)",
-                    linewidth: 2
+                    linewidth: 2,
+                    automargin: true
                   },
                   yaxis: { 
                     title: "Number of Responses",
@@ -991,12 +1362,14 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
                     gridcolor: "rgba(255,255,0,0.15)",
                     showline: true,
                     linecolor: "rgba(255,255,0,0.5)",
-                    linewidth: 2
+                    linewidth: 2,
+                    automargin: true
                   },
-                  margin: { l: 80, r: 60, t: 40, b: 150 },
+                  margin: { l: 80, r: 60, t: 40, b: 180 },
                   showlegend: false,
                   bargap: 0.2
                 }}
+                revision={chartKey}
                 config={{ 
                   displayModeBar: true,
                   displaylogo: false,
@@ -1054,20 +1427,33 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
   // Main render logic - no hooks here
   try {
+    let chartContent
     switch (activeTab) {
       case 'discovery':
-        return renderDiscoveryPatterns()
+        chartContent = renderDiscoveryPatterns()
+        break
       case 'listening':
-        return renderListeningBehavior()
+        chartContent = renderListeningBehavior()
+        break
       case 'ai_future':
-        return renderAIAttitudes()
+        chartContent = renderAIAttitudes()
+        break
       case 'demographics':
-        return renderDemographics()
+        chartContent = renderDemographics()
+        break
       case 'personas':
-        return renderFormatEvolution()
+        chartContent = renderFormatEvolution()
+        break
       default:
-        return renderDiscoveryPatterns()
+        chartContent = renderDiscoveryPatterns()
     }
+
+    return (
+      <>
+        <FilterBanner />
+        {chartContent}
+      </>
+    )
   } catch (error) {
     console.error('Error rendering charts:', error)
     return (

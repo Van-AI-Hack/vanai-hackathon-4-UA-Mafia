@@ -3,12 +3,17 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    jsxRuntime: 'automatic'
+  })],
   server: {
     port: 5173,
     host: true,
     open: true,
-    https: false // Set to true for PWA in production
+    https: false, // Set to true for PWA in production
+    hmr: {
+      overlay: true
+    }
   },
   build: {
     outDir: 'dist',
@@ -47,6 +52,8 @@ export default defineConfig({
   },
   // PWA optimizations
   esbuild: {
-    drop: ['console', 'debugger']
+    loader: 'tsx',
+    include: /src\/.*\.tsx?$/,
+    exclude: []
   }
 })
