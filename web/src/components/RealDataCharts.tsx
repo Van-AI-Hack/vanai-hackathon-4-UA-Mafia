@@ -569,16 +569,56 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
         )
       }
 
-      // Advanced treemap
+      // Advanced treemap with enhanced visuals
+      const provinceKeys = Object.keys(provinces)
+      const provinceValues = Object.values(provinces) as number[]
+      const totalResponses = provinceValues.reduce((a, b) => a + b, 0)
+      
+      // Calculate percentages and create custom labels
+      const customLabels = provinceKeys.map((province, i) => {
+        const count = provinceValues[i]
+        const percentage = ((count / totalResponses) * 100).toFixed(1)
+        return `${province}<br>${count} (${percentage}%)`
+      })
+
+      // Create custom colors for each province (cyberpunk gradient)
+      const provinceColors = provinceValues.map((value) => {
+        const intensity = value / Math.max(...provinceValues)
+        return `rgba(0, 255, 255, ${0.3 + intensity * 0.7})` // Cyan with varying opacity
+      })
+
       const treemapData = {
-        type: "treemap",
-        labels: Object.keys(provinces),
-        parents: Object.keys(provinces).map(() => "Canada"),
-        values: Object.values(provinces),
+        type: "treemap" as const,
+        labels: provinceKeys,
+        parents: provinceKeys.map(() => "Canada"),
+        values: provinceValues,
+        text: customLabels,
+        textposition: "middle center",
+        textfont: {
+          size: 14,
+          color: '#ffffff',
+          family: 'Arial, sans-serif',
+          weight: 'bold'
+        },
+        hovertemplate: '<b>%{label}</b><br>' +
+                       'Responses: %{value}<br>' +
+                       'Percentage: %{percentParent}<br>' +
+                       '<extra></extra>',
         marker: {
-          colorscale: "Blues",
-          showscale: true,
-          colorbar: { title: "Response Count" }
+          colors: provinceColors,
+          line: {
+            color: '#00ffff',
+            width: 2
+          },
+          pad: {
+            t: 25,
+            l: 5,
+            r: 5,
+            b: 5
+          }
+        },
+        pathbar: {
+          visible: false
         }
       }
 
@@ -588,21 +628,45 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
 
           {/* Treemap */}
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
-            <h4 className="text-xl font-bold text-white mb-4">Provincial Distribution Treemap</h4>
-            <div className="h-96">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-white">🗺️ Provincial Distribution Treemap</h4>
+              <span className="text-sm text-gray-400">Total Responses: {totalResponses}</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Interactive visualization of Canadian music survey respondents by province
+            </p>
+            <div className="h-[500px] rounded-lg overflow-hidden border border-cyan-400/30">
               <Plot
                 key={`treemap-${chartKey}`}
                 data={[treemapData]}
                 layout={{
-                  ...getBaseLayout("Canadian Provinces Distribution"),
-                  height: 350
+                  ...getBaseLayout(""),
+                  height: 500,
+                  margin: { t: 30, l: 5, r: 5, b: 5 },
+                  treemapcolorway: ['#00ffff', '#ff00ff', '#ffff00', '#00ff00'],
                 }}
-                config={{ displayModeBar: false, responsive: true }}
+                config={{ 
+                  displayModeBar: true,
+                  displaylogo: false,
+                  responsive: true,
+                  modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+                  toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'provincial_distribution_treemap',
+                    height: 500,
+                    width: 1000,
+                    scale: 2
+                  }
+                }}
+                style={{ width: '100%', height: '100%' }}
                 onError={(err: any) => {
                   console.error('Treemap chart error:', err)
                   setError('Failed to render Treemap chart')
                 }}
               />
+            </div>
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              💡 Tip: Larger blocks represent provinces with more survey responses. Hover for details.
             </div>
           </motion.div>
         </motion.div>
