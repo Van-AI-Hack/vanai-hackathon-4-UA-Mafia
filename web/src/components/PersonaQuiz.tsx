@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+// import audioManager from '../utils/audioManager'
 
 interface QuizQuestion {
   id: keyof QuizAnswers
@@ -45,9 +46,9 @@ const PersonaQuiz: React.FC<PersonaQuizProps> = ({ onComplete, isLoading }) => {
       options: [
         'I strongly prefer human-made music',
         'I prefer human-made music',
-        'I\'m neutral about AI music',
-        'I\'m open to AI-generated music',
-        'I\'m excited about AI music possibilities'
+        'I am neutral about AI music',
+        'I am open to AI-generated music',
+        'I am excited about AI music possibilities'
       ],
       category: 'Technology'
     },
@@ -55,8 +56,8 @@ const PersonaQuiz: React.FC<PersonaQuizProps> = ({ onComplete, isLoading }) => {
       id: 'music_relationship',
       question: 'How would you describe your relationship with music?',
       options: [
-        'I\'m obsessed with music',
-        'I like it but don\'t keep up with new releases',
+        'I am obsessed with music',
+        'I like it but do not keep up with new releases',
         'Music is just background noise for me',
         'I enjoy music but only casually',
         'Music is an important part of my identity'
@@ -65,7 +66,7 @@ const PersonaQuiz: React.FC<PersonaQuizProps> = ({ onComplete, isLoading }) => {
     },
     {
       id: 'age_group',
-      question: 'What\'s your age group?',
+      question: 'What is your age group?',
       options: [
         '18-34',
         '35-54',

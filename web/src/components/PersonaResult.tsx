@@ -6,7 +6,9 @@ import ExportPanel from './ExportPanel'
 import AIPersonaDescription from './AIPersonaDescription'
 import AIMusicRecommendations from './AIMusicRecommendations'
 import AIChatInterface from './AIChatInterface'
+import AudioPlayer from './AudioPlayer'
 import { saveToLocalStorage } from '../utils/exportUtils'
+import audioManager from '../utils/audioManager'
 
 interface Persona {
   id: number
@@ -99,6 +101,17 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
               <span className="gradient-text">Your Music DNA</span>
             </h1>
             <p className="text-xl text-gray-400">You are a...</p>
+          </motion.div>
+
+          {/* Audio Player */}
+          <motion.div variants={itemVariants} className="max-w-2xl mx-auto">
+            <AudioPlayer
+              personaId={persona.id}
+              personaName={persona.name}
+              personaColor={persona.color}
+              autoPlay={true}
+              showMusicNote={true}
+            />
           </motion.div>
 
           {/* Persona Card */}
