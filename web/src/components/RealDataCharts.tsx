@@ -630,10 +630,13 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({ surveyData, personas, a
           <motion.div variants={itemVariants} className="cyberpunk-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-bold text-white">🗺️ Provincial Distribution Treemap</h4>
-              <span className="text-sm text-gray-400">Total Responses: {totalResponses}</span>
+              <div className="text-right">
+                <span className="text-sm text-cyan-400 font-semibold">{totalResponses} responses with province data</span>
+                <p className="text-xs text-gray-500">({surveyData.total_responses} total survey responses)</p>
+              </div>
             </div>
             <p className="text-gray-400 text-sm mb-4">
-              Interactive visualization of Canadian music survey respondents by province
+              Interactive visualization of Canadian music survey respondents by province. {surveyData.total_responses - totalResponses} respondents did not provide province information.
             </p>
             <div className="h-[500px] rounded-lg overflow-hidden border border-cyan-400/30">
               <Plot
