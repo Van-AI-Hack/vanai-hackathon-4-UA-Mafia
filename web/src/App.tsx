@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Music, Brain, BarChart3, Users, Zap } from 'lucide-react'
-
 // Components
 import IntroScreen from './components/IntroScreen'
 import PersonaQuiz from './components/PersonaQuiz'
@@ -9,6 +7,7 @@ import PersonaResult from './components/PersonaResult'
 import Dashboard from './components/Dashboard'
 import NavigationMenu from './components/NavigationMenu'
 import WelcomeBack from './components/WelcomeBack'
+import LyricsStudio from './components/LyricsStudio'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import PerformanceMonitor from './components/PerformanceMonitor'
 // Audio test components removed for production
@@ -16,10 +15,9 @@ import PerformanceMonitor from './components/PerformanceMonitor'
 // Data
 import { loadPersonas, loadSurveyData, classifyPersona, Persona, SurveyData } from './utils/dataLoader'
 import { loadFromLocalStorage } from './utils/exportUtils'
-import pwaManager from './utils/pwaUtils'
 
 // Types
-interface QuizAnswers {
+interface QuizAnswers extends Record<string, string> {
   discovery_method: string
   ai_attitude: string
   music_relationship: string
@@ -27,11 +25,10 @@ interface QuizAnswers {
   listening_habits: string
 }
 
-type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'welcome-back'
+type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'welcome-back' | 'lyrics'
 
 const App: React.FC = () => {
   const [currentState, setCurrentState] = useState<AppState>('intro')
-  const [quizAnswers, setQuizAnswers] = useState<QuizAnswers | null>(null)
   const [personaResult, setPersonaResult] = useState<Persona | null>(null)
   const [personas, setPersonas] = useState<Persona[]>([])
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null)
@@ -73,8 +70,6 @@ const App: React.FC = () => {
 
   const handleQuizComplete = async (answers: QuizAnswers) => {
     setIsLoading(true)
-    setQuizAnswers(answers)
-    
     // Simulate ML classification delay
     await new Promise(resolve => setTimeout(resolve, 1500))
     
@@ -90,7 +85,6 @@ const App: React.FC = () => {
 
   const handleRestart = () => {
     setCurrentState('intro')
-    setQuizAnswers(null)
     setPersonaResult(null)
     setSavedResult(null)
   }
@@ -98,7 +92,6 @@ const App: React.FC = () => {
   const handleViewSavedResult = () => {
     if (savedResult) {
       setPersonaResult(savedResult.persona)
-      setQuizAnswers(savedResult.quizAnswers)
       setCurrentState('result')
     }
   }
@@ -222,6 +215,19 @@ const App: React.FC = () => {
                   }
                 }}
               />
+            </motion.div>
+          )}
+
+          {currentState === 'lyrics' && (
+            <motion.div
+              key="lyrics"
+              variants={pageVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.5 }}
+            >
+              <LyricsStudio />
             </motion.div>
           )}
         </AnimatePresence>

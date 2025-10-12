@@ -8,21 +8,7 @@ import AIMusicRecommendations from './AIMusicRecommendations'
 import AIChatInterface from './AIChatInterface'
 import AudioPlayer from './AudioPlayer'
 import { saveToLocalStorage } from '../utils/exportUtils'
-import audioManager from '../utils/audioManager'
-
-interface Persona {
-  id: number
-  name: string
-  description: string
-  traits: string[]
-  color: string
-  characteristics: {
-    music_relationship: { top_response: string }
-    discovery_method: { top_response: string }
-    age_group: { top_response: string }
-    ai_attitude: { top_response: string }
-  }
-}
+import type { Persona } from '../utils/dataLoader'
 
 interface PersonaResultProps {
   persona: Persona

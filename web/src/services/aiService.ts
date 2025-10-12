@@ -293,7 +293,7 @@ const generateChatResponse = async (message: string, persona: Persona): Promise<
 
 // Helper functions for better responses
 const generateMusicTasteInsights = (persona: Persona): string => {
-  const insights = {
+  const insights: Record<string, string> = {
     'The Radio Traditionalist': `Your music taste reveals someone who values **authenticity and tradition**! 🎵\n\nAs a Radio Traditionalist, you prefer music that feels genuine and human-made. Your taste suggests you appreciate:\n• **Timeless quality** over trendy sounds\n• **Emotional depth** in lyrics and melodies\n• **Artistic integrity** over commercial appeal\n• **Classic Canadian artists** who tell real stories\n\nYour preference for radio discovery shows you trust curated, professional curation over algorithms. This suggests you value **expertise and human judgment** in music selection.`,
     
     'The Digital Explorer': `Your music taste shows you're a **tech-savvy music adventurer**! 🚀\n\nAs a Digital Explorer, your taste reveals:\n• **Openness to innovation** and new sounds\n• **Curiosity about emerging artists** and genres\n• **Comfort with digital platforms** and streaming\n• **Interest in AI and technology** in music\n\nYour discovery method (${persona.characteristics.discovery_method.top_response}) suggests you're an **early adopter** who enjoys being on the cutting edge of music trends. You likely appreciate artists who push boundaries and experiment with new technologies.`,
@@ -309,7 +309,7 @@ const generateMusicTasteInsights = (persona: Persona): string => {
 }
 
 const getAIMusicInsight = (persona: Persona): string => {
-  const insights = {
+  const insights: Record<string, string> = {
     'I strongly prefer human-made music': 'value authenticity and human creativity over artificial generation',
     'I\'m neutral about AI music': 'have a balanced view, open to quality regardless of source',
     'I\'m open to AI-generated music': 'are curious about new technologies and their creative potential',
@@ -319,7 +319,7 @@ const getAIMusicInsight = (persona: Persona): string => {
 }
 
 const getMusicValues = (persona: Persona): string => {
-  const values = {
+  const values: Record<string, string> = {
     'I\'m obsessed with music': 'deep emotional connection and artistic expression',
     'I like it but don\'t keep up with new releases': 'comfort and familiarity in musical choices',
     'I listen casually': 'music as a pleasant background to life'
@@ -328,7 +328,7 @@ const getMusicValues = (persona: Persona): string => {
 }
 
 const getDiscoveryInsight = (persona: Persona): string => {
-  const insights = {
+  const insights: Record<string, string> = {
     'Radio': 'trust professional curation and enjoy the serendipity of radio discovery',
     'Friends/Family': 'value personal recommendations and social connection in music',
     'Streaming recommendations': 'are comfortable with algorithmic suggestions and digital platforms',
@@ -339,7 +339,7 @@ const getDiscoveryInsight = (persona: Persona): string => {
 }
 
 const getAlternativeDiscoveryMethods = (persona: Persona): string => {
-  const alternatives = {
+  const alternatives: Record<string, string> = {
     'Radio': 'streaming playlists, music blogs, and word-of-mouth',
     'Friends/Family': 'radio, streaming, and live events',
     'Streaming recommendations': 'social media, live events, and music blogs',

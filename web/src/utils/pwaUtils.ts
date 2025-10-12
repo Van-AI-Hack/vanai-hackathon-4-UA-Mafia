@@ -21,7 +21,7 @@ class PWAManager {
     window.addEventListener('beforeinstallprompt', (e) => {
       console.log('PWA: Install prompt available')
       e.preventDefault()
-      this.deferredPrompt = e as PWAInstallPrompt
+      this.deferredPrompt = e as unknown as PWAInstallPrompt
     })
 
     // Listen for appinstalled event
@@ -203,5 +203,4 @@ export const requestNotificationPermission = () => pwaManager.requestNotificatio
 export const showNotification = (title: string, options?: NotificationOptions) => pwaManager.showNotification(title, options)
 export const cacheUrls = (urls: string[]) => pwaManager.cacheUrls(urls)
 export const clearCaches = () => pwaManager.clearCaches()
-
 

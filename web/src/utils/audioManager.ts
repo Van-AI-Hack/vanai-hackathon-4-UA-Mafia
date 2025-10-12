@@ -34,8 +34,6 @@ class AudioManager {
   private masterGain: GainNode | null = null
   private isAudioContextPlaying: boolean = false
   private currentPersonaId: number | null = null
-  private activeOscillators: OscillatorNode[] = []
-  private activeGains: GainNode[] = []
   
   constructor() {
     // ALWAYS start unmuted for hackathon demo

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, Check } from 'lucide-react'
 // import audioManager from '../utils/audioManager'
 
 interface QuizQuestion {
@@ -10,7 +10,7 @@ interface QuizQuestion {
   category: string
 }
 
-interface QuizAnswers {
+interface QuizAnswers extends Record<string, string> {
   discovery_method: string
   ai_attitude: string
   music_relationship: string
@@ -19,7 +19,7 @@ interface QuizAnswers {
 }
 
 interface PersonaQuizProps {
-  onComplete: (answers: QuizAnswers) => void
+  onComplete: (answers: QuizAnswers) => void | Promise<void>
   isLoading: boolean
 }
 

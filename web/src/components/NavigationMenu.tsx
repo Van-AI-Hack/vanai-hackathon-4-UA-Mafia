@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Home, Brain, BarChart3, RotateCcw } from 'lucide-react'
+import { Menu, X, Home, Brain, BarChart3, RotateCcw, Music4 } from 'lucide-react'
 
-type AppState = 'intro' | 'quiz' | 'result' | 'dashboard'
+type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'lyrics' | 'welcome-back'
 
 interface NavigationMenuProps {
   currentState: AppState
@@ -20,7 +20,8 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
   const menuItems = [
     { id: 'intro', label: 'Home', icon: Home },
     { id: 'quiz', label: 'Quiz', icon: Brain },
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 }
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'lyrics', label: 'AI Studio', icon: Music4 }
   ]
 
   const handleNavigation = (state: AppState) => {

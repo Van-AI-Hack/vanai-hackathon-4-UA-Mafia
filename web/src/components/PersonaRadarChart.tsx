@@ -1,19 +1,6 @@
 import React from 'react'
 import Plot from 'react-plotly.js'
-
-interface Persona {
-  id: number
-  name: string
-  description: string
-  traits: string[]
-  color: string
-  characteristics: {
-    music_relationship: { top_response: string }
-    discovery_method: { top_response: string }
-    age_group: { top_response: string }
-    ai_attitude: { top_response: string }
-  }
-}
+import type { Persona } from '../utils/dataLoader'
 
 interface PersonaRadarChartProps {
   personas: Persona[]
@@ -21,7 +8,7 @@ interface PersonaRadarChartProps {
 
 const PersonaRadarChart: React.FC<PersonaRadarChartProps> = ({ personas }) => {
   // Create radar chart data
-  const radarData = personas.map((persona, index) => {
+  const radarData = personas.map((persona) => {
     // Convert characteristics to numeric values for radar chart
     const characteristics = [
       persona.characteristics.music_relationship?.top_response || 'Unknown',
@@ -31,7 +18,7 @@ const PersonaRadarChart: React.FC<PersonaRadarChartProps> = ({ personas }) => {
     ]
 
     // Create mock scores based on persona characteristics
-    const scores = characteristics.map((char, i) => {
+    const scores = characteristics.map((char) => {
       // Simple scoring based on characteristic type
       if (char.includes('obsessed') || char.includes('open') || char.includes('excited')) return 90
       if (char.includes('like') || char.includes('neutral') || char.includes('18-34')) return 70
@@ -114,5 +101,4 @@ const PersonaRadarChart: React.FC<PersonaRadarChartProps> = ({ personas }) => {
 }
 
 export default PersonaRadarChart
-
 

@@ -2,10 +2,8 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Download, 
-  Share2, 
   Image, 
   FileText, 
-  Settings,
   Check,
   X,
   Copy,
@@ -250,5 +248,4 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ persona, onClose }) => {
 }
 
 export default ExportPanel
-
 

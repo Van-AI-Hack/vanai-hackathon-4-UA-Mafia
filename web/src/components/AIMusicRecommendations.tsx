@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Music, 
@@ -227,5 +227,4 @@ const AIMusicRecommendations: React.FC<AIMusicRecommendationsProps> = ({ persona
 }
 
 export default AIMusicRecommendations
-
 

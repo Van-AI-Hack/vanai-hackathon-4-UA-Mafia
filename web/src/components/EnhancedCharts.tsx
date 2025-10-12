@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Plot from 'react-plotly.js';
+import Plotly from 'plotly.js';
+import type { PlotlyHTMLElement } from 'plotly.js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Eye, RotateCcw, Maximize2, Info } from 'lucide-react';
+import { Download, RotateCcw, Maximize2, Info } from 'lucide-react';
 
 interface ChartProps {
   data: any;
@@ -13,7 +15,7 @@ interface ChartProps {
 }
 
 interface EnhancedChartProps extends ChartProps {
-  exportFormats?: ('png' | 'svg' | 'pdf')[];
+  exportFormats?: ('png' | 'svg')[];
   showControls?: boolean;
   responsive?: boolean;
   animation?: boolean;
@@ -31,7 +33,7 @@ const EnhancedChart: React.FC<EnhancedChartProps> = ({
   responsive = true,
   animation = true
 }) => {
-  const plotRef = useRef<Plot>(null);
+  const plotRef = useRef<PlotlyHTMLElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [chartError, setChartError] = useState<string | null>(null);
@@ -89,18 +91,16 @@ const EnhancedChart: React.FC<EnhancedChartProps> = ({
     doubleClick: 'reset+autosize'
   };
 
-  const exportChart = (format: 'png' | 'svg' | 'pdf') => {
+  const exportChart = (format: 'png' | 'svg') => {
     if (!plotRef.current) return;
     
-    const plotElement = plotRef.current;
     const filename = `${title.toLowerCase().replace(/\s+/g, '_')}.${format}`;
     
-    plotElement.downloadImage({
+    Plotly.downloadImage(plotRef.current, {
       format,
       filename,
       height: 600,
-      width: 1000,
-      scale: 2
+      width: 1000
     });
   };
 
@@ -109,12 +109,12 @@ const EnhancedChart: React.FC<EnhancedChartProps> = ({
   };
 
   const resetView = () => {
-    if (plotRef.current) {
-      plotRef.current.relayout({
-        'xaxis.autorange': true,
-        'yaxis.autorange': true
-      });
-    }
+    if (!plotRef.current) return;
+
+    Plotly.relayout(plotRef.current, {
+      'xaxis.autorange': true,
+      'yaxis.autorange': true
+    });
   };
 
   const handlePlotReady = () => {
@@ -256,11 +256,16 @@ const EnhancedChart: React.FC<EnhancedChartProps> = ({
             className="w-full"
           >
             <Plot
-              ref={plotRef}
               data={data}
               layout={enhancedLayout}
               config={enhancedConfig}
-              onInitialized={handlePlotReady}
+              onInitialized={(_, graphDiv) => {
+                plotRef.current = graphDiv as PlotlyHTMLElement;
+                handlePlotReady();
+              }}
+              onUpdate={(_, graphDiv) => {
+                plotRef.current = graphDiv as PlotlyHTMLElement;
+              }}
               onError={handlePlotError}
               style={{ width: '100%', height: isFullscreen ? 'calc(100vh - 8rem)' : '500px' }}
               useResizeHandler={responsive}
@@ -285,7 +290,7 @@ const EnhancedChart: React.FC<EnhancedChartProps> = ({
 
 // Specialized chart components
 export const PersonaRadarChart: React.FC<{ personas: any[] }> = ({ personas }) => {
-  const radarData = personas.map((persona, index) => ({
+  const radarData = personas.map((persona, personaIndex) => ({
     type: 'scatterpolar',
     r: Object.values(persona.characteristics || {}).map((char: any) => 
       char.distribution ? Object.values(char.distribution)[0] as number : 0
@@ -294,8 +299,8 @@ export const PersonaRadarChart: React.FC<{ personas: any[] }> = ({ personas }) =
       key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
     ),
     fill: 'toself',
-    name: persona.name || `Persona ${index}`,
-    line: { color: `hsl(${index * 72}, 70%, 60%)` },
+    name: persona.name || `Persona ${personaIndex}`,
+    line: { color: `hsl(${personaIndex * 72}, 70%, 60%)` },
     marker: { size: 6 }
   }));
 

@@ -138,7 +138,7 @@ export const downloadAsPNG = async (persona: Persona, options: ExportOptions): P
       // Draw traits
       ctx.font = '16px Inter, sans-serif'
       let y = 120
-      persona.traits.forEach((trait, index) => {
+      persona.traits.forEach((trait) => {
         if (y < height - 50) {
           ctx.fillText(trait, width / 2, y)
           y += 30
@@ -275,5 +275,4 @@ export const loadFromLocalStorage = (): any => {
     return null
   }
 }
-
 
