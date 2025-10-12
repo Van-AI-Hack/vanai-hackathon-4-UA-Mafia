@@ -42,6 +42,7 @@ const LyricsStudio: React.FC = () => {
   const [sunoInstrumentalOnly, setSunoInstrumentalOnly] = useState(false)
   const [sunoNegativeTags, setSunoNegativeTags] = useState('')
   const [sunoVocalGender, setSunoVocalGender] = useState<'m' | 'f' | ''>('')
+  const [manualJobId, setManualJobId] = useState('')
 
   const pollTimeoutRef = useRef<number | null>(null)
 
@@ -127,15 +128,11 @@ const LyricsStudio: React.FC = () => {
     setIsPollingSuno(true)
     try {
       const status = await fetchSunoTrackStatus(sunoKey, jobId)
-      setSunoStatus(`${status.status.toUpperCase()}: ${status.message}`)
-      if (status.tracks?.length) {
-        setSunoTracks(status.tracks)
-      }
+      await processSunoStatus(status)
 
-      if (status.status === 'completed' && status.tracks?.length) {
+      if (status.status === 'completed') {
         clearPollingTimeout()
         setIsPollingSuno(false)
-        await hydrateSunoAudio(status.tracks[0])
         return
       }
 
@@ -159,6 +156,19 @@ const LyricsStudio: React.FC = () => {
       setIsPollingSuno(false)
       const message = error instanceof Error ? error.message : 'Unable to poll Suno. Please try again.'
       setSunoError(message)
+    }
+  }
+
+  const processSunoStatus = async (status: Awaited<ReturnType<typeof fetchSunoTrackStatus>>) => {
+    setSunoStatus(`${status.status.toUpperCase()}: ${status.message}`)
+    if (status.tracks?.length) {
+      setSunoTracks(status.tracks)
+    }
+
+    if (status.status === 'completed' && status.tracks?.length) {
+      await hydrateSunoAudio(status.tracks[0])
+    } else if (status.status === 'failed') {
+      setSunoError(status.message || 'Suno generation failed.')
     }
   }
 
@@ -219,6 +229,41 @@ const LyricsStudio: React.FC = () => {
       document.body.removeChild(link)
     } else if (sunoAudioRemoteUrl) {
       window.open(sunoAudioRemoteUrl, '_blank')
+    }
+  }
+
+  const handleManualStatusCheck = async () => {
+    if (!manualJobId.trim()) {
+      setSunoError('Enter a Suno job ID to check its status.')
+      return
+    }
+    if (!sunoKey.trim()) {
+      setSunoError('Suno API key is required to query job status.')
+      return
+    }
+
+    setSunoError(null)
+    setSunoStatus('Checking Suno job status...')
+    setIsPollingSuno(false)
+    clearPollingTimeout()
+    if (sunoAudioObjectUrl) {
+      URL.revokeObjectURL(sunoAudioObjectUrl)
+      setSunoAudioObjectUrl(null)
+    }
+    setSunoAudioRemoteUrl(null)
+    setSunoTracks([])
+
+    try {
+      const status = await fetchSunoTrackStatus(sunoKey, manualJobId.trim())
+      setSunoJobId(manualJobId.trim())
+      await processSunoStatus(status)
+
+      if (status.status !== 'completed' && status.status !== 'failed') {
+        pollSunoJob(manualJobId.trim())
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to fetch Suno status. Please try again.'
+      setSunoError(message)
     }
   }
 
@@ -503,6 +548,31 @@ const LyricsStudio: React.FC = () => {
                   )}
                 </div>
               )}
+
+              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3">
+                <div className="text-sm font-semibold text-indigo-200">
+                  Check existing Suno job
+                </div>
+                <p className="text-xs text-slate-400">
+                  Recover an earlier request by supplying its job ID. The studio will poll Suno and download the audio locally before playback.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    className="flex-1 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+                    placeholder="Enter Suno job ID"
+                    value={manualJobId}
+                    onChange={(event) => setManualJobId(event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleManualStatusCheck}
+                    disabled={!manualJobId.trim() || !sunoKey.trim()}
+                    className="rounded-xl bg-indigo-500/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-indigo-200 transition hover:bg-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Check status
+                  </button>
+                </div>
+              </div>
 
               {sunoTracks.length > 1 && (
                 <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-xs text-slate-300 space-y-2">
