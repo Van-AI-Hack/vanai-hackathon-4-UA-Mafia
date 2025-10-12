@@ -20,6 +20,7 @@ export interface SunoTrackRequest {
   customMode?: boolean
   instrumental?: boolean
   model?: string
+  callbackUrl?: string
   negativeTags?: string
   vocalGender?: 'm' | 'f'
   styleWeight?: number
@@ -54,12 +55,20 @@ export interface SunoTrackDownload {
 const {
   VITE_SUNO_API_BASE_URL,
   VITE_SUNO_GENERATE_ENDPOINT,
-  VITE_SUNO_STATUS_ENDPOINT
+  VITE_SUNO_STATUS_ENDPOINT,
+  VITE_SUNO_CALLBACK_URL
 } = import.meta.env
 
 const SUNO_API_BASE_URL = VITE_SUNO_API_BASE_URL || 'https://api.sunoapi.org/api/v1'
 const SUNO_GENERATE_ENDPOINT = VITE_SUNO_GENERATE_ENDPOINT || `${SUNO_API_BASE_URL}/generate`
 const SUNO_STATUS_ENDPOINT = VITE_SUNO_STATUS_ENDPOINT || `${SUNO_API_BASE_URL}/get`
+const SUNO_DEFAULT_CALLBACK = VITE_SUNO_CALLBACK_URL || 'https://example.com/suno-callback'
+
+const logSuno = (label: string, data: Record<string, unknown>) => {
+  if (typeof console !== 'undefined') {
+    console.info(`[Suno] ${label}`, data)
+  }
+}
 
 const normaliseSunoStatus = (status?: string): SunoTrackResponse['status'] => {
   if (!status) return 'processing'
@@ -71,16 +80,26 @@ const normaliseSunoStatus = (status?: string): SunoTrackResponse['status'] => {
 }
 
 const extractSunoJobId = (payload: any): string | undefined => {
+  const source = payload?.data ?? payload
+
+  if (Array.isArray(source)) {
+    const candidate = source.find((item) => item?.taskId || item?.jobId || item?.id)
+    if (candidate) {
+      return candidate.taskId || candidate.jobId || candidate.id
+    }
+  }
+
   return (
+    source?.taskId ||
+    source?.task_id ||
+    source?.jobId ||
+    source?.job_id ||
+    source?.id ||
     payload?.id ||
     payload?.job_id ||
     payload?.jobId ||
     payload?.task_id ||
     payload?.taskId ||
-    payload?.data?.taskId ||
-    payload?.data?.task_id ||
-    payload?.data?.id ||
-    payload?.data?.job_id ||
     payload?.result?.id
   )
 }
@@ -210,8 +229,10 @@ Deliver the lyrics using clear sections (Verse, Chorus, Bridge) and keep it unde
 
 const normaliseSunoResponse = (payload: any, fallbackMessage?: string): SunoTrackResponse => {
   const jobId = extractSunoJobId(payload)
+  const base = payload?.data ?? payload
+
   const tracks: SunoGeneratedTrack[] | undefined = (() => {
-    const clips = payload?.data?.clips || payload?.clips || payload?.data?.[0]?.clips
+    const clips = base?.clips || payload?.clips || base?.[0]?.clips
     if (Array.isArray(clips)) {
       return clips.map((clip: any) => ({
         audioUrl: extractSunoAudioUrl(clip) || clip?.audioUrl || clip?.streamUrl,
@@ -223,15 +244,15 @@ const normaliseSunoResponse = (payload: any, fallbackMessage?: string): SunoTrac
       }))
     }
 
-    const audioUrl = extractSunoAudioUrl(payload) || payload?.data?.audioUrl
+    const audioUrl = extractSunoAudioUrl(base) || extractSunoAudioUrl(payload)
     if (audioUrl) {
       return [{
         audioUrl,
-        audioDownloadUrl: payload?.data?.audioDownloadUrl || payload?.data?.downloadUrl,
-        coverUrl: payload?.data?.coverUrl,
-        title: payload?.data?.title,
-        prompt: payload?.data?.prompt,
-        instrumental: payload?.data?.instrumental
+        audioDownloadUrl: base?.audioDownloadUrl || base?.downloadUrl,
+        coverUrl: base?.coverUrl,
+        title: base?.title,
+        prompt: base?.prompt,
+        instrumental: base?.instrumental
       }]
     }
 
@@ -239,10 +260,11 @@ const normaliseSunoResponse = (payload: any, fallbackMessage?: string): SunoTrac
   })()
 
   if (!jobId && !tracks) {
+    logSuno('unexpected response structure', { payload })
     throw new Error('Unexpected response from Suno. Could not find a job identifier.')
   }
 
-  const status = normaliseSunoStatus(payload?.data?.status || payload?.status || payload?.state || (tracks ? 'completed' : undefined))
+  const status = normaliseSunoStatus(base?.status || payload?.status || payload?.state || (tracks ? 'completed' : undefined))
 
   return {
     jobId: jobId || crypto.randomUUID(),
@@ -266,6 +288,7 @@ export const createSunoTrack = async (
     customMode = true,
     instrumental = false,
     model = 'V3_5',
+    callbackUrl,
     negativeTags,
     vocalGender,
     styleWeight,
@@ -281,32 +304,54 @@ export const createSunoTrack = async (
     throw new Error('Supply lyrics before requesting a Suno track.')
   }
 
+  const requestBody = {
+    prompt: customMode ? lyrics : tags?.join(', ') || lyrics,
+    title,
+    style,
+    tags: tags && tags.length ? tags.join(', ') : undefined,
+    customMode,
+    instrumental,
+    model,
+    callBackUrl: callbackUrl || SUNO_DEFAULT_CALLBACK,
+    negativeTags,
+    vocalGender,
+    styleWeight,
+    weirdnessConstraint,
+    audioWeight
+  }
+
+  logSuno('generate request', {
+    endpoint: SUNO_GENERATE_ENDPOINT,
+    model,
+    customMode,
+    instrumental,
+    lyricLength: lyrics.length,
+    title,
+    style,
+    tags,
+    hasNegativeTags: Boolean(negativeTags),
+    vocalGender,
+    callbackUrl: requestBody.callBackUrl
+  })
+
   const response = await fetch(SUNO_GENERATE_ENDPOINT, {
     method: 'POST',
     headers: buildAuthHeaders(apiKey),
-    body: JSON.stringify({
-      prompt: customMode ? lyrics : tags?.join(', ') || lyrics,
-      title,
-      style,
-      tags: tags && tags.length ? tags.join(', ') : undefined,
-      customMode,
-      instrumental,
-      model,
-      negativeTags,
-      vocalGender,
-      styleWeight,
-      weirdnessConstraint,
-      audioWeight
-    })
+    body: JSON.stringify(requestBody)
   })
 
-  if (!response.ok) {
-    const errorPayload = await response.json().catch(() => ({}))
-    const errorMessage = errorPayload?.error || errorPayload?.message || `Suno request failed (${response.status}).`
-    throw new Error(errorMessage)
+  const payload = await response.json().catch(() => null)
+  logSuno('generate response', { status: response.status, payload })
+
+  if (!payload) {
+    throw new Error('Suno returned an empty response.')
   }
 
-  const payload = await response.json()
+  if (!response.ok || (payload.code && payload.code !== 200)) {
+    const message = payload?.msg || payload?.error || payload?.message || `Suno request failed (${response.status}).`
+    throw new Error(message)
+  }
+
   return normaliseSunoResponse(payload, 'Suno generation request submitted.')
 }
 
@@ -322,18 +367,26 @@ export const fetchSunoTrackStatus = async (
     throw new Error('Missing Suno job identifier.')
   }
 
-  const response = await fetch(buildStatusUrl(jobId), {
+  const statusUrl = buildStatusUrl(jobId)
+  logSuno('status request', { endpoint: statusUrl })
+
+  const response = await fetch(statusUrl, {
     method: 'GET',
     headers: buildAuthHeaders(apiKey)
   })
 
-  if (!response.ok) {
-    const errorPayload = await response.json().catch(() => ({}))
-    const errorMessage = errorPayload?.error || errorPayload?.message || `Unable to fetch Suno job status (${response.status}).`
-    throw new Error(errorMessage)
+  const payload = await response.json().catch(() => null)
+  logSuno('status response', { status: response.status, payload })
+
+  if (!payload) {
+    throw new Error('Suno returned an empty status response.')
   }
 
-  const payload = await response.json()
+  if (!response.ok || (payload.code && payload.code !== 200)) {
+    const message = payload?.msg || payload?.error || payload?.message || `Unable to fetch Suno job status (${response.status}).`
+    throw new Error(message)
+  }
+
   return normaliseSunoResponse(payload, 'Polling Suno job status...')
 }
 
