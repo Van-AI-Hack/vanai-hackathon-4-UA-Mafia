@@ -37,8 +37,6 @@ const LyricsStudio: React.FC = () => {
   const [sunoAudioRemoteUrl, setSunoAudioRemoteUrl] = useState<string | null>(null)
   const [sunoDownloadName, setSunoDownloadName] = useState('suno-track.mp3')
   const [sunoTracks, setSunoTracks] = useState<SunoGeneratedTrack[]>([])
-  const defaultCallback = typeof window !== 'undefined' ? `${window.location.origin}/api/suno-callback` : ''
-  const [sunoCallbackUrl, setSunoCallbackUrl] = useState(defaultCallback)
   const [sunoModel, setSunoModel] = useState('V3_5')
   const [sunoCustomMode, setSunoCustomMode] = useState(true)
   const [sunoInstrumentalOnly, setSunoInstrumentalOnly] = useState(false)
@@ -186,7 +184,6 @@ const LyricsStudio: React.FC = () => {
         customMode: sunoCustomMode,
         instrumental: sunoInstrumentalOnly,
         model: sunoModel,
-        callbackUrl: sunoCallbackUrl || undefined,
         negativeTags: sunoNegativeTags || undefined,
         vocalGender: sunoVocalGender || undefined
       })
@@ -382,16 +379,6 @@ const LyricsStudio: React.FC = () => {
               />
 
               <label className="block mt-6 text-sm font-semibold text-slate-300 uppercase tracking-wide">
-                Callback URL
-              </label>
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none"
-                placeholder="https://example.com/api/suno-callback"
-                value={sunoCallbackUrl}
-                onChange={(event) => setSunoCallbackUrl(event.target.value)}
-              />
-
-              <label className="block mt-6 text-sm font-semibold text-slate-300 uppercase tracking-wide">
                 Track title
               </label>
               <input
@@ -476,7 +463,7 @@ const LyricsStudio: React.FC = () => {
               </div>
 
               <p className="mt-6 text-xs text-slate-400">
-                Configure the Suno payload above. Custom mode feeds the generated lyrics directly into Suno&apos;s <code className="bg-slate-800/60 px-1.5 py-0.5 rounded">/api/v1/generate</code> endpoint; supply a valid callback URL if you expect Suno to post status updates back to your infrastructure.
+                Configure the Suno payload above. Custom mode feeds the generated lyrics directly into Suno&apos;s <code className="bg-slate-800/60 px-1.5 py-0.5 rounded">/api/v1/generate</code> endpoint; this client polls the track status until the download URL is ready.
               </p>
 
               <button
@@ -486,7 +473,6 @@ const LyricsStudio: React.FC = () => {
                   sunoLoading ||
                   !lyricsResult.trim() ||
                   !sunoKey.trim() ||
-                  !sunoCallbackUrl.trim() ||
                   (sunoCustomMode && (!trackTitle.trim() || !style.trim()))
                 }
                 className="mt-6 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
@@ -577,7 +563,7 @@ const LyricsStudio: React.FC = () => {
                 <li>Persist keys securely on the server or via environment variables before going live.</li>
                 <li>Validate quotas and handle API failure states for a smooth UX.</li>
                 <li>Add server-side proxying if you need stricter control over request origins or key exposure.</li>
-                <li>Implement the callback endpoint you supply so Suno can notify you when generation completes.</li>
+                <li>Optionally implement Suno webhooks if you later move from polling to callbacks.</li>
               </ul>
             </div>
           </div>

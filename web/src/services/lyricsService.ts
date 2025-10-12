@@ -20,7 +20,6 @@ export interface SunoTrackRequest {
   customMode?: boolean
   instrumental?: boolean
   model?: string
-  callbackUrl?: string
   negativeTags?: string
   vocalGender?: 'm' | 'f'
   styleWeight?: number
@@ -267,7 +266,6 @@ export const createSunoTrack = async (
     customMode = true,
     instrumental = false,
     model = 'V3_5',
-    callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/suno-callback` : undefined,
     negativeTags,
     vocalGender,
     styleWeight,
@@ -294,7 +292,6 @@ export const createSunoTrack = async (
       customMode,
       instrumental,
       model,
-      callBackUrl: callbackUrl,
       negativeTags,
       vocalGender,
       styleWeight,
