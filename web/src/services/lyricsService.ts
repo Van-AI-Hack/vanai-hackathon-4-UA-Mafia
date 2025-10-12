@@ -61,7 +61,7 @@ const {
 
 const SUNO_API_BASE_URL = VITE_SUNO_API_BASE_URL || 'https://api.sunoapi.org/api/v1'
 const SUNO_GENERATE_ENDPOINT = VITE_SUNO_GENERATE_ENDPOINT || `${SUNO_API_BASE_URL}/generate`
-const SUNO_STATUS_ENDPOINT = VITE_SUNO_STATUS_ENDPOINT || `${SUNO_API_BASE_URL}/get`
+const SUNO_STATUS_ENDPOINT = VITE_SUNO_STATUS_ENDPOINT || `${SUNO_API_BASE_URL}/generate/record-info`
 const SUNO_DEFAULT_CALLBACK = VITE_SUNO_CALLBACK_URL || 'https://example.com/suno-callback'
 
 const logSuno = (label: string, data: Record<string, unknown>) => {
@@ -73,7 +73,7 @@ const logSuno = (label: string, data: Record<string, unknown>) => {
 const normaliseSunoStatus = (status?: string): SunoTrackResponse['status'] => {
   if (!status) return 'processing'
   const value = status.toLowerCase()
-  if (value.includes('complete') || value === 'succeeded' || value === 'done') return 'completed'
+  if (value.includes('complete') || value === 'succeeded' || value === 'done' || value === 'success') return 'completed'
   if (value.includes('fail') || value === 'error') return 'failed'
   if (value.includes('queue') || value === 'submitted') return 'queued'
   return 'processing'
@@ -136,15 +136,15 @@ const buildStatusUrl = (jobId: string) => {
     return SUNO_STATUS_ENDPOINT.replace('{id}', jobId)
   }
 
-  const endpoint = SUNO_STATUS_ENDPOINT.replace(/\/$/, '')
+  const base = SUNO_STATUS_ENDPOINT.replace(/\/$/, '')
 
-  if (endpoint.includes('?')) {
-    const hasParam = endpoint.match(/([?&])taskId=/)
-    const separator = endpoint.endsWith('?') || endpoint.endsWith('&') ? '' : hasParam ? '' : '&'
-    return hasParam ? endpoint.replace(/taskId=[^&]*/, `taskId=${jobId}`) : `${endpoint}${separator}taskId=${jobId}`
+  if (base.includes('?')) {
+    const hasTask = base.includes('taskId=')
+    const separator = base.endsWith('?') || base.endsWith('&') || hasTask ? '' : '&'
+    return hasTask ? base.replace(/taskId=[^&]*/, `taskId=${jobId}`) : `${base}${separator}taskId=${jobId}`
   }
 
-  return `${endpoint}?taskId=${jobId}`
+  return `${base}?taskId=${jobId}`
 }
 
 const buildAuthHeaders = (apiKey: string) => ({
@@ -228,10 +228,22 @@ Deliver the lyrics using clear sections (Verse, Chorus, Bridge) and keep it unde
 }
 
 const normaliseSunoResponse = (payload: any, fallbackMessage?: string): SunoTrackResponse => {
-  const jobId = extractSunoJobId(payload)
   const base = payload?.data ?? payload
+  const jobId = extractSunoJobId(payload)
 
   const tracks: SunoGeneratedTrack[] | undefined = (() => {
+    const sunoData = base?.response?.sunoData
+    if (Array.isArray(sunoData) && sunoData.length) {
+      return sunoData.map((clip: any) => ({
+        audioUrl: clip?.audioUrl || clip?.streamAudioUrl || clip?.sourceAudioUrl,
+        audioDownloadUrl: clip?.sourceAudioUrl || clip?.audioUrl,
+        coverUrl: clip?.imageUrl || clip?.sourceImageUrl,
+        title: clip?.title,
+        prompt: clip?.prompt,
+        instrumental: clip?.instrumental
+      }))
+    }
+
     const clips = base?.clips || payload?.clips || base?.[0]?.clips
     if (Array.isArray(clips)) {
       return clips.map((clip: any) => ({
@@ -264,13 +276,14 @@ const normaliseSunoResponse = (payload: any, fallbackMessage?: string): SunoTrac
     throw new Error('Unexpected response from Suno. Could not find a job identifier.')
   }
 
-  const status = normaliseSunoStatus(base?.status || payload?.status || payload?.state || (tracks ? 'completed' : undefined))
+  const statusSource = base?.status || base?.response?.status || payload?.status || payload?.state || (tracks ? 'completed' : undefined)
+  const status = normaliseSunoStatus(statusSource)
 
   return {
     jobId: jobId || crypto.randomUUID(),
     status,
-    message: extractSunoMessage(payload) || fallbackMessage || 'Request submitted to Suno.',
-    title: payload?.title,
+    message: extractSunoMessage(base?.response || payload) || fallbackMessage || 'Request submitted to Suno.',
+    title: base?.response?.title || base?.title || payload?.title,
     tracks,
     rawPayload: payload
   }
