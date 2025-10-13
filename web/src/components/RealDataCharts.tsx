@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Plot from 'react-plotly.js'
 import { Persona, SurveyData } from '../utils/dataLoader'
@@ -23,6 +23,9 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [useSimpleCharts, setUseSimpleCharts] = useState(false)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const nodeLabelsRef = useRef<string[]>([])
   
   console.log('RealDataCharts - Data status:', { 
     hasSurveyData: !!surveyData, 
@@ -55,6 +58,89 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
     filters.persona || 
     filters.highlightUser
   )
+
+  // Audio control functions for hover events
+  const playRadioAudio = () => {
+    if (isAudioPlaying) return
+    
+    try {
+      // Create audio element if it doesn't exist
+      if (!audioRef.current) {
+        audioRef.current = new Audio('/audio/persona-playlists/radio-55-plus-playlist.mp3')
+        audioRef.current.loop = true
+        audioRef.current.volume = 0.3
+      }
+      
+      audioRef.current.play().then(() => {
+        setIsAudioPlaying(true)
+        console.log('🎵 Playing radio 55+ playlist on hover')
+      }).catch(err => {
+        console.error('Audio play failed:', err)
+      })
+    } catch (err) {
+      console.error('Audio setup failed:', err)
+    }
+  }
+
+  const stopRadioAudio = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setIsAudioPlaying(false)
+      console.log('🔇 Stopped radio 55+ playlist on unhover')
+    }
+  }
+
+  // Check if hovered element is the radio to 55+ flow
+  const isRadioTo55PlusFlow = (point: any) => {
+    if (!point) return false
+    
+    try {
+      // Debug: log the point structure to understand it better
+      console.log('Hover point:', point)
+      
+      // Check if we're hovering over a link/flow (not a node)
+      // Links have different properties than nodes
+      if (point.curveNumber === 0 && point.pointNumber !== undefined) {
+        // Check if this is a link by looking for source and target properties
+        if (point.source && point.target) {
+          console.log('✅ Hovering over a link/flow!')
+          console.log('Source:', point.source)
+          console.log('Target:', point.target)
+          
+          // Check if this link goes from "The radio" to "55 Plus"
+          const sourceLabel = point.source.label || ''
+          const targetLabel = point.target.label || ''
+          
+          console.log('Source label:', sourceLabel)
+          console.log('Target label:', targetLabel)
+          
+          if (sourceLabel.includes('The radio') && targetLabel.includes('55 Plus')) {
+            console.log('✅ Found the radio to 55+ flow!')
+            return true
+          }
+        } else {
+          // This is a node, not a link
+          console.log('Hovering over a node, not a flow')
+        }
+      }
+      
+      return false
+    } catch (err) {
+      console.error('Error checking flow:', err)
+      return false
+    }
+  }
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
+  }, [])
 
   // Apply filters to survey data
   const getFilteredData = () => {
@@ -516,6 +602,23 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
         }
       })
 
+      // Store node labels for hover detection
+      const nodeLabels = allLabels.map((label, idx) => {
+        // Add counts/percentages to labels
+        if (idx < discoveryKeys.length) {
+          const count = roundedValues[idx]
+          const pct = ((count / totalDiscovery) * 100).toFixed(1)
+          return `${label}<br>${count} (${pct}%)`
+        } else if (idx < discoveryKeys.length + ageGroups.length) {
+          const ageIdx = idx - discoveryKeys.length
+          return `${label}<br>${ageDistribution[ageIdx]} people`
+        }
+        return label
+      })
+      
+      // Store the original labels (without formatting) for comparison
+      nodeLabelsRef.current = allLabels
+
       const sankeyData = {
         type: "sankey" as const,
         orientation: "h",
@@ -527,18 +630,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
             color: "#00ffff", 
             width: 2 
           },
-          label: allLabels.map((label, idx) => {
-            // Add counts/percentages to labels
-            if (idx < discoveryKeys.length) {
-              const count = roundedValues[idx]
-              const pct = ((count / totalDiscovery) * 100).toFixed(1)
-              return `${label}<br>${count} (${pct}%)`
-            } else if (idx < discoveryKeys.length + ageGroups.length) {
-              const ageIdx = idx - discoveryKeys.length
-              return `${label}<br>${ageDistribution[ageIdx]} people`
-            }
-            return label
-          }),
+          label: nodeLabels,
           color: nodeColors,
           hovertemplate: '<b>%{label}</b><br>Total flow: %{value}<extra></extra>',
           hoverlabel: {
@@ -571,6 +663,12 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
               <h4 className="text-xl font-bold text-white">🌊 Discovery Method Flow</h4>
               <div className="flex items-center gap-2">
                 {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
+                {isAudioPlaying && (
+                  <span className="text-xs px-2 py-1 bg-green-400/20 text-green-400 rounded-full flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Radio 55+ Playing
+                  </span>
+                )}
                 <span className="text-sm text-cyan-400 font-semibold">{totalDiscovery} responses</span>
               </div>
             </div>
@@ -607,6 +705,31 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
                   }
                 }}
                 style={{ width: '100%', height: '100%' }}
+                onInitialized={(_figure: any, graphDiv: any) => {
+                  // Set up hover events on the plotly instance
+                  graphDiv.on('plotly_hover', (event: any) => {
+                    const point = event.points[0]
+                    if (isRadioTo55PlusFlow(point)) {
+                      playRadioAudio()
+                    }
+                  })
+                  
+                  graphDiv.on('plotly_unhover', () => {
+                    stopRadioAudio()
+                  })
+                  
+                  // Add click event as fallback
+                  graphDiv.on('plotly_click', (event: any) => {
+                    const point = event.points[0]
+                    if (isRadioTo55PlusFlow(point)) {
+                      if (isAudioPlaying) {
+                        stopRadioAudio()
+                      } else {
+                        playRadioAudio()
+                      }
+                    }
+                  })
+                }}
                 onError={(err: any) => {
                   console.error('Sankey chart error:', err)
                   setError('Failed to render Sankey chart')

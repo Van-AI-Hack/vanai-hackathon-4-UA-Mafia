@@ -8,11 +8,14 @@ export default defineConfig({
   })],
   server: {
     port: 5173,
-    host: true,
+    host: 'localhost',
     open: true,
     https: false, // Set to true for PWA in production
     hmr: {
-      overlay: true
+      overlay: true,
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173
     }
   },
   build: {
