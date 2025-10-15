@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "app/api/**/*.js": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/avatars/(.*)",
@@ -13,12 +8,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/avatars/(.*)",
-      "destination": "/public/avatars/$1"
     }
   ]
 }

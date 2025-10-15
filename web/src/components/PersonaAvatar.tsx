@@ -1,5 +1,5 @@
 import React from 'react'
-import GLBAvatar from './GLBAvatar'
+import GLBAvatarLoader from './GLBAvatarLoader'
 import GeneratedAvatar from './GeneratedAvatars'
 
 interface PersonaAvatarProps {
@@ -38,9 +38,10 @@ const PersonaAvatar: React.FC<PersonaAvatarProps> = ({
   // Use GLB models if available, fallback to generated avatars
   if (modelPath && !useGenerated) {
     return (
-      <GLBAvatar
+      <GLBAvatarLoader
         modelPath={modelPath}
         personaColor={personaColor}
+        personaId={personaId}
         className={className}
         autoRotate={autoRotate}
         enableControls={enableControls}
