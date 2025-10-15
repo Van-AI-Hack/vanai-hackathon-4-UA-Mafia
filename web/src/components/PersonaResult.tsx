@@ -7,6 +7,7 @@ import AIPersonaDescription from './AIPersonaDescription'
 import AIMusicRecommendations from './AIMusicRecommendations'
 import AIChatInterface from './AIChatInterface'
 import AudioPlayer from './AudioPlayer'
+import PersonaAvatar from './PersonaAvatar'
 import { saveToLocalStorage } from '../utils/exportUtils'
 import type { Persona } from '../utils/dataLoader'
 
@@ -113,6 +114,31 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
               >
                 {persona.name}
               </h2>
+              
+              {/* 3D Avatar */}
+              <motion.div
+                initial={{ scale: 0, rotateY: 180 }}
+                animate={{ scale: 1, rotateY: 0 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                className="w-32 h-32 mx-auto mb-6 relative"
+              >
+                <PersonaAvatar
+                  personaId={persona.name}
+                  personaColor={persona.color}
+                  className="w-full h-full"
+                  autoRotate={true}
+                  enableControls={true}
+                />
+                {/* Glow effect around avatar */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-xl opacity-30"
+                  style={{ 
+                    background: `radial-gradient(circle, ${persona.color}40 0%, transparent 70%)`,
+                    transform: 'scale(1.5)'
+                  }}
+                />
+              </motion.div>
+              
               
               <p className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto">
                 {persona.description}
