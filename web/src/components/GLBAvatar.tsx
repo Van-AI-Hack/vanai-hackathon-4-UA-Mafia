@@ -1,8 +1,7 @@
-import React, { Suspense, useRef, useEffect } from 'react'
+import React, { Suspense, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Environment, PresentationControls } from '@react-three/drei'
-import { Group, Mesh, MeshStandardMaterial, MeshBasicMaterial } from 'three'
-import * as THREE from 'three'
+import { Group } from 'three'
 
 interface GLBAvatarProps {
   modelPath: string
@@ -16,11 +15,9 @@ interface GLBAvatarProps {
 // Component to load and display GLB models
 function GLBModel({ 
   modelPath, 
-  personaColor, 
   scale = 1 
 }: { 
   modelPath: string
-  personaColor: string
   scale?: number 
 }) {
   const groupRef = useRef<Group>(null)
@@ -134,11 +131,10 @@ const GLBAvatar: React.FC<GLBAvatarProps> = ({
           
           {/* GLB Model or Fallback */}
           {modelPath ? (
-            <GLBModel 
-              modelPath={modelPath} 
-              personaColor={personaColor} 
-              scale={scale}
-            />
+          <GLBModel 
+            modelPath={modelPath} 
+            scale={scale}
+          />
           ) : (
             <FallbackAvatar 
               personaId="default" 
