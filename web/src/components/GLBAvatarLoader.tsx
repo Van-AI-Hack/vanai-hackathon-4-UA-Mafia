@@ -120,6 +120,7 @@ const GLBAvatarLoader: React.FC<GLBAvatarLoaderProps> = ({
           autoRotate={autoRotate}
           autoRotateSpeed={2}
           enablePan={false}
+          enabled={enableControls}
         />
       </Canvas>
     </div>
