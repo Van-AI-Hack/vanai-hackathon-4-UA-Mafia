@@ -31,7 +31,7 @@ const PersonaAvatar: React.FC<PersonaAvatarProps> = ({
   className = "",
   autoRotate = true,
   enableControls = true,
-  useGenerated = false // Default to GLB models
+  useGenerated = true // Default to generated avatars until GLB files are fixed
 }) => {
   const modelPath = getAvatarModelPath(personaId)
   

@@ -15,32 +15,40 @@ interface GLBAvatarProps {
 // Component to load and display GLB models
 function GLBModel({ 
   modelPath, 
-  scale = 1 
+  scale = 1,
+  onError
 }: { 
   modelPath: string
-  scale?: number 
+  scale?: number
+  onError?: () => void
 }) {
   const groupRef = useRef<Group>(null)
   
-  const { scene } = useGLTF(modelPath)
-  
-  // Clone the scene to avoid issues with multiple instances
-  const clonedScene = scene.clone()
-  
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1
-    }
-  })
+  try {
+    const { scene } = useGLTF(modelPath)
+    
+    // Clone the scene to avoid issues with multiple instances
+    const clonedScene = scene.clone()
+    
+    useFrame((state) => {
+      if (groupRef.current) {
+        groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1
+      }
+    })
 
-  // Keep original GLB colors - no persona color tinting
-  // The GLB models will display in their original colors
+    // Keep original GLB colors - no persona color tinting
+    // The GLB models will display in their original colors
 
-  return (
-    <group ref={groupRef} scale={scale}>
-      <primitive object={clonedScene} />
-    </group>
-  )
+    return (
+      <group ref={groupRef} scale={scale}>
+        <primitive object={clonedScene} />
+      </group>
+    )
+  } catch (error) {
+    console.error('Failed to load GLB model:', modelPath, error)
+    if (onError) onError()
+    return null
+  }
 }
 
 // Fallback geometric avatar when GLB model is not available
@@ -114,6 +122,13 @@ const GLBAvatar: React.FC<GLBAvatarProps> = ({
   enableControls = true,
   scale = 1
 }) => {
+  const [useFallback, setUseFallback] = React.useState(false)
+
+  const handleGLBError = () => {
+    console.log('GLB model failed to load, using fallback avatar')
+    setUseFallback(true)
+  }
+
   return (
     <div className={`w-full h-full ${className}`}>
       <Canvas
@@ -130,11 +145,12 @@ const GLBAvatar: React.FC<GLBAvatarProps> = ({
           <Environment preset="city" />
           
           {/* GLB Model or Fallback */}
-          {modelPath ? (
-          <GLBModel 
-            modelPath={modelPath} 
-            scale={scale}
-          />
+          {modelPath && !useFallback ? (
+            <GLBModel 
+              modelPath={modelPath} 
+              scale={scale}
+              onError={handleGLBError}
+            />
           ) : (
             <FallbackAvatar 
               personaId="default" 
