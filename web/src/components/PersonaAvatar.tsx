@@ -1,6 +1,7 @@
 import React from 'react'
 import GLBAvatarLoader from './GLBAvatarLoader'
 import GeneratedAvatar from './GeneratedAvatars'
+import { getAvatarGLBUrl } from '../services/avatarService'
 
 interface PersonaAvatarProps {
   personaId: string
@@ -11,18 +12,9 @@ interface PersonaAvatarProps {
   useGenerated?: boolean // New prop to choose between GLB and generated
 }
 
-// Avatar model mapping - using your actual GLB files
+// Get Cloudinary GLB URL for persona
 const getAvatarModelPath = (personaId: string | number): string | null => {
-  // Map by persona name since that's what we're using in the component
-  const avatarModels: Record<string, string> = {
-    'The Digital Explorer': '/avatars/The Digital Explorer tech-savvy+youth+3d+model.glb',
-    'The Radio Traditionalist': '/avatars/The Radio Traditionalist steampunk+music+machine+3d+model.glb',
-    'The Casual Listener': '/avatars/The Casual Listener casual+listener+3d+model.glb',
-    'The AI Skeptic': '/avatars/The AI Skeptic acoustic+guitar+3d+model.glb',
-    'The Music Obsessive': '/avatars/The Music Obsessive musician+in+studio+3d+model.glb'
-  }
-  
-  return avatarModels[personaId] || null
+  return getAvatarGLBUrl(personaId as string)
 }
 
 const PersonaAvatar: React.FC<PersonaAvatarProps> = ({
