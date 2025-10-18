@@ -5,7 +5,7 @@ import { EventCard } from './EventCard';
 import { EventCreationModal } from './EventCreationModal';
 import { WebSearchService } from '../services/webSearchService';
 import { EventSyncService } from '../services/eventSyncService';
-import { ArrowLeft, RefreshCw, Plus, Calendar, Building, Music, MapPin, Users } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Plus, Calendar, Building, Music, MapPin } from 'lucide-react';
 
 interface EventBrowserProps {
   userAccessToken: string;

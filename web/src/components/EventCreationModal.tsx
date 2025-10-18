@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Event, Venue, EventSearchFilters } from '../types/events';
+import { Event, Venue } from '../types/events';
 import { EventService } from '../services/eventService';
 import { X, Music, Calendar, Clock, Users, DollarSign, MapPin, User, Plus, Tag } from 'lucide-react';
 
@@ -48,8 +48,7 @@ const DURATION_OPTIONS = [
 export const EventCreationModal: React.FC<EventCreationModalProps> = ({
   isOpen,
   onClose,
-  onEventCreated,
-  userAccessToken
+  onEventCreated
 }) => {
   const [formData, setFormData] = useState<FormData>({
     title: '',

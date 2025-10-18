@@ -168,7 +168,7 @@ export class WebSearchService {
   }
 
   // Search for local/community events (could integrate with Meetup, Facebook Events, etc.)
-  private static async searchLocalEvents(filters: EventSearchFilters): Promise<Event[]> {
+  private static async searchLocalEvents(_filters: EventSearchFilters): Promise<Event[]> {
     // This would integrate with local event platforms
     // For now, return empty array
     return [];
@@ -246,6 +246,8 @@ export class WebSearchService {
       date: event.start?.local?.split('T')[0] || new Date().toISOString().split('T')[0],
       time: event.start?.local?.split('T')[1]?.split('.')[0] || '19:00',
       duration: 120, // Default duration
+      maxParticipants: 50,
+      currentParticipants: 0,
       organizer: event.organizer?.name || 'Unknown Organizer',
       price: event.is_free ? 0 : (event.ticket_availability?.minimum_ticket_price?.major_value || 0),
       eventType: this.determineEventType(event),
@@ -278,6 +280,8 @@ export class WebSearchService {
       date: event.dates?.start?.localDate || new Date().toISOString().split('T')[0],
       time: event.dates?.start?.localTime || '19:00',
       duration: 120,
+      maxParticipants: 50,
+      currentParticipants: 0,
       organizer: event._embedded?.attractions?.[0]?.name || 'Unknown Organizer',
       price: event.priceRanges?.[0]?.min || 0,
       eventType: 'concert',

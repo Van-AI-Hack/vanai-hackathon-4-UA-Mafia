@@ -90,7 +90,7 @@ export class EventSyncService {
       .select('venue_id, venues(city)')
       .not('venue_id', 'is', null);
 
-    const cities = [...new Set(events?.map(e => e.venues?.city).filter(Boolean))] as string[];
+    const cities = [...new Set(events?.map(e => e.venues?.[0]?.city).filter(Boolean))] as string[];
     
     // Sync venues for each city
     for (const city of cities) {
@@ -113,7 +113,7 @@ export class EventSyncService {
       .select('venue_id, venues(city)')
       .not('venue_id', 'is', null);
 
-    const cities = [...new Set(events?.map(e => e.venues?.city).filter(Boolean))] as string[];
+    const cities = [...new Set(events?.map(e => e.venues?.[0]?.city).filter(Boolean))] as string[];
     
     // Sync events for each city
     for (const city of cities) {

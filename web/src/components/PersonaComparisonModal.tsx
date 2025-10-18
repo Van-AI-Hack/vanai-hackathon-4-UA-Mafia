@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Music, MapPin, Users, Sparkles, TrendingUp, BarChart3, Share2, Facebook, Linkedin, Twitter, MessageCircle, Copy, Check } from 'lucide-react';
 import { BuddyPersona } from '../lib/supabase';
-import { Persona } from '../utils/dataLoader';
 
 interface PersonaComparisonModalProps {
   isOpen: boolean;
@@ -354,7 +353,7 @@ export const PersonaComparisonModal: React.FC<PersonaComparisonModalProps> = ({
                     </h4>
                     
                     {/* Native Share (Mobile) */}
-                    {navigator.share && (
+                    {typeof navigator.share === 'function' && (
                       <button
                         onClick={handleNativeShare}
                         className="w-full mb-4 p-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white rounded-lg transition-colors flex items-center justify-center gap-3"

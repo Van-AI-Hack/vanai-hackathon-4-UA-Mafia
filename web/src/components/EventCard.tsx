@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Event, Venue } from '../types/events';
-import { EventService } from '../services/eventService';
 import { Calendar, Clock, Users, Star, MapPin, Phone, Building, Save, Check } from 'lucide-react';
 
 interface EventCardProps {

@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Users, Music, MapPin, Mail, Linkedin, Lock, Sparkles, ArrowLeft, Share2, Calendar, Map } from 'lucide-react'
+import { Users, Music, MapPin, Mail, Linkedin, Lock, Sparkles, ArrowLeft, Share2, Calendar } from 'lucide-react'
 import { BuddyPersona } from '../lib/supabase'
 import { getSuggestedMatches, getMyPersona, revealContact } from '../services/buddyService'
 import BuddySaveModal from './BuddySaveModal'
@@ -159,7 +159,7 @@ const BuddyBrowser: React.FC<BuddyBrowserProps> = ({ currentPersona, onBack }) =
               <button
                 onClick={() => setCurrentView('events')}
                 className={`px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
-                  currentView === 'events'
+                  (currentView as string) === 'events'
                     ? 'bg-cyan-500 text-white'
                     : 'text-gray-400 hover:text-white'
                 }`}
