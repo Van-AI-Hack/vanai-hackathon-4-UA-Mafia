@@ -5,6 +5,7 @@ import { EventCard } from './EventCard';
 import { EventCreationModal } from './EventCreationModal';
 import { WebSearchService } from '../services/webSearchService';
 import { EventSyncService } from '../services/eventSyncService';
+import { ArrowLeft, RefreshCw, Plus, Calendar, Building, Music, MapPin, Users } from 'lucide-react';
 
 interface EventBrowserProps {
   userAccessToken: string;
@@ -98,101 +99,120 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              ← Back
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Music Events & Venues</h1>
-              <p className="text-gray-600">Discover karaoke nights, concerts, and music venues near you</p>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Matches
+          </button>
+          
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl">
+                <Music className="w-8 h-8 text-cyan-400" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold">
+                  <span className="gradient-text">Music Events & Venues</span>
+                </h1>
+                <p className="text-gray-400">
+                  Discover karaoke nights, concerts, and music venues near you
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={refreshData}
+                className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </button>
+              <button
+                onClick={() => setIsCreatingEvent(true)}
+                className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Create Event
+              </button>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <button
-              onClick={refreshData}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              🔄 Refresh
-            </button>
-            <button
-              onClick={() => setIsCreatingEvent(true)}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            >
-              ➕ Create Event
-            </button>
-          </div>
-        </div>
+        </motion.div>
 
         {/* Sync Status */}
         {syncStatus.lastSync && (
-          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-blue-700">
-              <span>🔄</span>
+          <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-400/30 rounded-xl">
+            <div className="flex items-center gap-2 text-sm text-cyan-300">
+              <RefreshCw className="w-4 h-4" />
               <span>Last sync: {new Date(syncStatus.lastSync).toLocaleString()}</span>
-              {syncStatus.isRunning && <span className="text-orange-600">(Syncing...)</span>}
+              {syncStatus.isRunning && <span className="text-orange-400">(Syncing...)</span>}
             </div>
           </div>
         )}
 
         {/* Search Mode Toggle */}
         <div className="mb-6">
-          <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+          <div className="flex gap-2 p-1 bg-gray-800 rounded-lg w-fit">
             <button
               onClick={() => setSearchMode('events')}
-              className={`px-4 py-2 rounded-md transition-colors ${
+              className={`px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
                 searchMode === 'events'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-cyan-500 text-white'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
-              🎵 Events
+              <Calendar className="w-4 h-4" />
+              Events
             </button>
             <button
               onClick={() => setSearchMode('venues')}
-              className={`px-4 py-2 rounded-md transition-colors ${
+              className={`px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
                 searchMode === 'venues'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-cyan-500 text-white'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
-              🏢 Venues
+              <Building className="w-4 h-4" />
+              Venues
             </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-8 p-6 bg-white rounded-xl shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Search Filters</h3>
+        <div className="mb-8 p-6 cyberpunk-card">
+          <h3 className="text-lg font-semibold mb-4 text-white">Search Filters</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 City
               </label>
               <input
                 type="text"
                 value={filters.city || ''}
                 onChange={(e) => handleFilterChange({ city: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-slate-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-gray-400"
                 placeholder="e.g., Toronto"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Category
               </label>
               <select
                 value={filters.category || ''}
                 onChange={(e) => handleFilterChange({ category: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-slate-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white"
               >
                 <option value="">All Categories</option>
                 <option value="karaoke">🎤 Karaoke</option>
@@ -205,13 +225,13 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
             
             {searchMode === 'events' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Event Type
                 </label>
                 <select
                   value={filters.eventType || ''}
                   onChange={(e) => handleFilterChange({ eventType: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white"
                 >
                   <option value="">All Types</option>
                   <option value="karaoke_night">🎤 Karaoke Night</option>
@@ -225,14 +245,14 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
             )}
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Max Price
               </label>
               <input
                 type="number"
                 value={filters.maxPrice || ''}
                 onChange={(e) => handleFilterChange({ maxPrice: parseFloat(e.target.value) || undefined })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-slate-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-white placeholder-gray-400"
                 placeholder="e.g., 50"
               />
             </div>
@@ -242,7 +262,7 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
             <button
               onClick={handleSearch}
               disabled={isLoading}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
             >
               {isLoading ? 'Searching...' : 'Search'}
             </button>
@@ -253,8 +273,8 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading {searchMode}...</p>
+              <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-400">Loading {searchMode}...</p>
             </div>
           </div>
         ) : (
@@ -262,19 +282,21 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
             {searchMode === 'events' ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-white">
                     Events ({events.length})
                   </h2>
                 </div>
                 
                 {events.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🎵</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No events found</h3>
-                    <p className="text-gray-600 mb-4">Try adjusting your search filters or create a new event!</p>
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Music className="w-12 h-12 text-cyan-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2 text-white">No events found</h3>
+                    <p className="text-gray-400 mb-6">Try adjusting your search filters or create a new event!</p>
                     <button
                       onClick={() => setIsCreatingEvent(true)}
-                      className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white rounded-xl font-semibold transition-all"
                     >
                       Create Event
                     </button>
@@ -296,16 +318,18 @@ export const EventBrowser: React.FC<EventBrowserProps> = ({
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-white">
                     Venues ({venues.length})
                   </h2>
                 </div>
                 
                 {venues.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🏢</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No venues found</h3>
-                    <p className="text-gray-600">Try adjusting your search filters!</p>
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Building className="w-12 h-12 text-cyan-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2 text-white">No venues found</h3>
+                    <p className="text-gray-400">Try adjusting your search filters!</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -341,44 +365,45 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300"
+      className="cyberpunk-card p-6 hover:shadow-xl hover:shadow-cyan-500/10 transition-all"
     >
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{venue.name}</h3>
-            <p className="text-gray-600 text-sm mb-3">{venue.address}</p>
-            <p className="text-gray-500 text-sm">{venue.description}</p>
-          </div>
-          
-          <div className="text-right">
-            <div className="flex items-center gap-1 mb-1">
-              <span className="text-yellow-500">⭐</span>
-              <span className="font-medium">{venue.rating}</span>
-              <span className="text-xs text-gray-500">({venue.userRatingsTotal})</span>
-            </div>
-            <div className="text-sm text-gray-600">{getPriceLevel(venue.priceLevel)}</div>
-          </div>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-white mb-2">{venue.name}</h3>
+          <p className="text-gray-400 text-sm mb-3">{venue.address}</p>
+          <p className="text-gray-500 text-sm">{venue.description}</p>
         </div>
-
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-          <span>📍 {venue.city}</span>
-          {venue.distance && <span>{venue.distance.toFixed(1)} km away</span>}
-        </div>
-
-        {venue.features.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {venue.features.map((feature, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
-              >
-                {feature.replace('_', ' ')}
-              </span>
-            ))}
+        
+        <div className="text-right">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-yellow-400">⭐</span>
+            <span className="font-medium text-white">{venue.rating}</span>
+            <span className="text-xs text-gray-400">({venue.userRatingsTotal})</span>
           </div>
-        )}
+          <div className="text-sm text-cyan-400">{getPriceLevel(venue.priceLevel)}</div>
+        </div>
       </div>
+
+      <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
+        <div className="flex items-center gap-1">
+          <MapPin className="w-4 h-4" />
+          <span>{venue.city}</span>
+        </div>
+        {venue.distance && <span>{venue.distance.toFixed(1)} km away</span>}
+      </div>
+
+      {venue.features.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {venue.features.map((feature, index) => (
+            <span
+              key={index}
+              className="px-3 py-1 bg-cyan-500/20 text-cyan-300 text-xs rounded-full border border-cyan-500/30"
+            >
+              {feature.replace('_', ' ')}
+            </span>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 };
