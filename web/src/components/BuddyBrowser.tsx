@@ -9,6 +9,7 @@ import { BuddyPersona } from '../lib/supabase'
 import { getSuggestedMatches, getMyPersona, revealContact } from '../services/buddyService'
 import BuddySaveModal from './BuddySaveModal'
 import { EventBrowser } from './EventBrowser'
+import { PersonaComparisonModal } from './PersonaComparisonModal'
 import { Persona } from '../utils/dataLoader'
 
 interface BuddyBrowserProps {
@@ -28,6 +29,12 @@ const BuddyBrowser: React.FC<BuddyBrowserProps> = ({ currentPersona, onBack }) =
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [revealedContacts, setRevealedContacts] = useState<Record<string, any>>({})
   const [currentView, setCurrentView] = useState<'matches' | 'events'>('matches')
+  const [showComparison, setShowComparison] = useState(false)
+  const [selectedMatch, setSelectedMatch] = useState<{
+    persona: BuddyPersona
+    similarity: number
+    sharedTags: string[]
+  } | null>(null)
 
   useEffect(() => {
     loadMyPersonaAndMatches()
@@ -76,6 +83,11 @@ const BuddyBrowser: React.FC<BuddyBrowserProps> = ({ currentPersona, onBack }) =
 
   const handleSaveSuccess = () => {
     loadMyPersonaAndMatches()
+  }
+
+  const handleCompare = (match: { persona: BuddyPersona; similarity: number; sharedTags: string[] }) => {
+    setSelectedMatch(match)
+    setShowComparison(true)
   }
 
   if (showSaveModal && currentPersona) {
@@ -302,7 +314,10 @@ const BuddyBrowser: React.FC<BuddyBrowserProps> = ({ currentPersona, onBack }) =
 
                   {/* Actions */}
                   <div className="mt-4 pt-4 border-t border-gray-700 flex gap-2">
-                    <button className="flex-1 py-2 px-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-lg transition-all text-sm font-medium flex items-center justify-center gap-2">
+                    <button 
+                      onClick={() => handleCompare({ persona, similarity, sharedTags })}
+                      className="flex-1 py-2 px-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white rounded-lg transition-all text-sm font-medium flex items-center justify-center gap-2"
+                    >
                       <Share2 className="w-4 h-4" />
                       Compare
                     </button>
@@ -351,6 +366,18 @@ const BuddyBrowser: React.FC<BuddyBrowserProps> = ({ currentPersona, onBack }) =
             </div>
           </div>
         </motion.div>
+
+        {/* Comparison Modal */}
+        {showComparison && selectedMatch && myPersona && (
+          <PersonaComparisonModal
+            isOpen={showComparison}
+            onClose={() => setShowComparison(false)}
+            myPersona={myPersona}
+            otherPersona={selectedMatch.persona}
+            similarity={selectedMatch.similarity}
+            sharedTags={selectedMatch.sharedTags}
+          />
+        )}
       </div>
     </div>
   )
