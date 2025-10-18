@@ -115,27 +115,19 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
                 {persona.name}
               </h2>
               
-              {/* 3D Avatar */}
+              {/* Persona Avatar */}
               <motion.div
                 initial={{ scale: 0, rotateY: 180 }}
                 animate={{ scale: 1, rotateY: 0 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="w-32 h-32 mx-auto mb-6 relative"
+                className="w-64 h-64 mx-auto mb-6 relative"
               >
                 <PersonaAvatar
-                  personaId={persona.name}
+                  personaId={persona.id.toString()}
+                  personaName={persona.name}
                   personaColor={persona.color}
                   className="w-full h-full"
-                  autoRotate={true}
-                  enableControls={true}
-                />
-                {/* Glow effect around avatar */}
-                <div 
-                  className="absolute inset-0 rounded-full blur-xl opacity-30"
-                  style={{ 
-                    background: `radial-gradient(circle, ${persona.color}40 0%, transparent 70%)`,
-                    transform: 'scale(1.5)'
-                  }}
+                  animate={true}
                 />
               </motion.div>
               

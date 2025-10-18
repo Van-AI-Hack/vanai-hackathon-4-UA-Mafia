@@ -3,15 +3,13 @@
  * Handles background music, sound effects, and persona-specific audio
  */
 
-// Persona-specific music themes (placeholders for AI-generated music)
-// In production, these would be replaced with Suno/Udio generated tracks
+// Persona-specific music themes - Custom Suno generated soundtracks
 export const personaMusicThemes: Record<number, string> = {
-  0: '/audio/ambient/nostalgic-waves.mp3',
-  1: '/audio/ambient/digital-discovery.mp3',
-  2: '/audio/ambient/traditional-harmony.mp3',
-  3: '/audio/ambient/future-beats.mp3',
-  4: '/audio/ambient/social-vibes.mp3',
-  // Add more as needed
+  0: '/audio/persona-playlists/persona-0-soundtrack.mp3', // The Radio Traditionalist - Back to the Porchlight
+  1: '/audio/persona-playlists/persona-1-soundtrack.mp3', // The Digital Explorer - Bridges in the Sky
+  2: '/audio/persona-playlists/persona-2-soundtrack.mp3', // The Casual Listener - Everyday Kind of Love
+  3: '/audio/persona-playlists/persona-3-soundtrack.mp3', // The Music Obsessive - Echoes of Becoming
+  4: '/audio/persona-playlists/persona-4-soundtrack.mp3', // The AI Skeptic - Faith in the Worn and Weathered
 }
 
 // Sound effects URLs
@@ -63,10 +61,30 @@ class AudioManager {
     // Stop current music if playing
     this.stopBackgroundMusic()
 
-    // Always use Web Audio API for consistent behavior
-    // (Audio files don't exist, so skip trying to load them)
-    console.log('🎵 Using Web Audio API for soundscape generation')
-    this.generateAmbientTone(personaId)
+    // Try to load and play the actual soundtrack file
+    const audioUrl = personaMusicThemes[personaId]
+    if (audioUrl) {
+      console.log(`🎵 Loading soundtrack: ${audioUrl}`)
+      this.backgroundMusic = new Audio(audioUrl)
+      this.backgroundMusic.volume = this.isMuted ? 0 : this.volume
+      this.backgroundMusic.loop = true
+      
+      // Try to play
+      this.backgroundMusic.play()
+        .then(() => {
+          console.log(`✅ Successfully playing soundtrack for persona ${personaId}`)
+        })
+        .catch((error) => {
+          console.warn(`⚠️ Failed to load soundtrack, falling back to Web Audio API:`, error)
+          // Fallback to generated soundscape
+          this.backgroundMusic = null
+          this.generateAmbientTone(personaId)
+        })
+    } else {
+      // No file available, use Web Audio API
+      console.log('🎵 No soundtrack file available, using Web Audio API for soundscape generation')
+      this.generateAmbientTone(personaId)
+    }
   }
 
   /**

@@ -50,3 +50,5 @@ export const uploadAvatarGLB = async (file: File, personaName: string): Promise<
   const result = await response.json()
   return result.secure_url
 }
+
+

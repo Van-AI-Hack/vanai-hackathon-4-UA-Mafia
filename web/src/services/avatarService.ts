@@ -72,3 +72,6 @@ export const getAvailableAvatars = async (): Promise<string[]> => {
   
   return avatars
 }
+
+
+
