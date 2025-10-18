@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Home, Brain, BarChart3, RotateCcw, Music4 } from 'lucide-react'
+import { Menu, X, Home, Brain, BarChart3, RotateCcw, Music4, Users } from 'lucide-react'
 
-type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'lyrics' | 'welcome-back'
+type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'lyrics' | 'welcome-back' | 'buddy'
 
 interface NavigationMenuProps {
   currentState: AppState
@@ -21,7 +21,8 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
     { id: 'intro', label: 'Home', icon: Home },
     { id: 'quiz', label: 'Quiz', icon: Brain },
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-    { id: 'lyrics', label: 'AI Studio', icon: Music4 }
+    { id: 'lyrics', label: 'AI Studio', icon: Music4 },
+    { id: 'buddy', label: 'Find Twin 🎵', icon: Users, badge: 'NEW' }
   ]
 
   const handleNavigation = (state: AppState) => {
@@ -64,7 +65,7 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
                     onClick={() => handleNavigation(item.id as AppState)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                       isActive
                         ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/30'
                         : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
@@ -72,6 +73,11 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
                   >
                     <item.icon className="w-4 h-4" />
                     {item.label}
+                    {item.badge && (
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] font-bold rounded-full">
+                        {item.badge}
+                      </span>
+                    )}
                   </motion.button>
                 )
               })}

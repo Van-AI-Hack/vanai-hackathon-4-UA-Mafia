@@ -15,12 +15,14 @@ interface PersonaResultProps {
   persona: Persona
   onExploreDashboard: () => void
   onRestart: () => void
+  onFindBuddy?: () => void
 }
 
 const PersonaResult: React.FC<PersonaResultProps> = ({ 
   persona, 
   onExploreDashboard, 
-  onRestart 
+  onRestart,
+  onFindBuddy
 }) => {
   const [showExportPanel, setShowExportPanel] = useState(false)
 
@@ -252,6 +254,21 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
               <Download className="w-5 h-5" />
               Export Card
             </motion.button>
+
+            {onFindBuddy && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onFindBuddy}
+                className="relative px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white rounded-lg transition-all inline-flex items-center gap-3 font-semibold shadow-lg shadow-pink-500/25"
+              >
+                <Users className="w-5 h-5" />
+                Find Your Music Twin 🎵
+                <span className="absolute -top-2 -right-2 px-2 py-1 bg-cyan-400 text-xs font-bold rounded-full animate-pulse">
+                  NEW
+                </span>
+              </motion.button>
+            )}
 
             <motion.button
               whileHover={{ scale: 1.05 }}

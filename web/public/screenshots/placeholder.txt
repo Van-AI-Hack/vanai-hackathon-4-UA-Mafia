@@ -1,0 +1,9 @@
+# Screenshots Directory
+
+This directory contains screenshots for the PWA manifest.
+
+Required screenshots:
+- desktop-home.png (1280x720) - Canadian Music DNA Home Screen
+- mobile-quiz.png (390x844) - Music DNA Quiz on Mobile
+
+These are referenced in the manifest.json for PWA store listings.

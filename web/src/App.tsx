@@ -10,6 +10,7 @@ import WelcomeBack from './components/WelcomeBack'
 import LyricsStudio from './components/LyricsStudio'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import PerformanceMonitor from './components/PerformanceMonitor'
+import BuddyBrowser from './components/BuddyBrowser'
 // Audio test components removed for production
 
 // Data
@@ -25,7 +26,7 @@ interface QuizAnswers extends Record<string, string> {
   listening_habits: string
 }
 
-type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'welcome-back' | 'lyrics'
+type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'welcome-back' | 'lyrics' | 'buddy'
 
 const App: React.FC = () => {
   const [currentState, setCurrentState] = useState<AppState>('intro')
@@ -87,6 +88,10 @@ const App: React.FC = () => {
     setCurrentState('intro')
     setPersonaResult(null)
     setSavedResult(null)
+  }
+
+  const handleFindBuddy = () => {
+    setCurrentState('buddy')
   }
 
   const handleViewSavedResult = () => {
@@ -187,6 +192,7 @@ const App: React.FC = () => {
                 persona={personaResult}
                 onExploreDashboard={handleExploreDashboard}
                 onRestart={handleRestart}
+                onFindBuddy={handleFindBuddy}
               />
             </motion.div>
           )}
@@ -228,6 +234,22 @@ const App: React.FC = () => {
               transition={{ duration: 0.5 }}
             >
               <LyricsStudio />
+            </motion.div>
+          )}
+
+          {currentState === 'buddy' && (
+            <motion.div
+              key="buddy"
+              variants={pageVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.5 }}
+            >
+              <BuddyBrowser
+                currentPersona={personaResult || undefined}
+                onBack={() => setCurrentState('result')}
+              />
             </motion.div>
           )}
         </AnimatePresence>
