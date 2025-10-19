@@ -63,21 +63,21 @@ const AIMusicRecommendations: React.FC<AIMusicRecommendationsProps> = ({ persona
       animate={{ opacity: 1, y: 0 }}
       className="cyberpunk-card"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center">
             <Music className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-white">AI Music Recommendations</h3>
-            <p className="text-gray-400">Curated just for your {persona.name} profile</p>
+            <h3 className="text-xl md:text-2xl font-bold text-white">AI Music Recommendations</h3>
+            <p className="text-gray-400 text-sm md:text-base">Curated just for your {persona.name} profile</p>
           </div>
         </div>
         
         <button
           onClick={generateRecommendations}
           disabled={isLoading}
-          className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center space-x-2"
+          className="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center space-x-2 text-sm md:text-base w-full md:w-auto justify-center"
         >
           {isLoading ? (
             <>

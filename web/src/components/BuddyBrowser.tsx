@@ -128,62 +128,62 @@ const BuddyBrowser: React.FC<BuddyBrowserProps> = ({ currentPersona, onBack }) =
             Back to Results
           </button>
           
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl">
-                <Users className="w-8 h-8 text-cyan-400" />
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="p-3 md:p-4 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl">
+                <Users className="w-6 h-6 md:w-8 md:h-8 text-cyan-400" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold">
+                <h1 className="text-2xl md:text-4xl font-bold">
                   <span className="gradient-text">Find Your Music Twin</span>
                 </h1>
-                <p className="text-gray-400">
+                <p className="text-gray-400 text-sm md:text-base">
                   Discover people with similar (or complementary) music DNA
                 </p>
               </div>
             </div>
             
             {/* View Toggle */}
-            <div className="flex gap-2 p-1 bg-gray-800 rounded-lg">
+            <div className="flex gap-2 p-1 bg-gray-800 rounded-lg w-full md:w-auto">
               <button
                 onClick={() => setCurrentView('matches')}
-                className={`px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
+                className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 text-sm md:text-base ${
                   currentView === 'matches'
                     ? 'bg-cyan-500 text-white'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <Users className="w-4 h-4" />
-                Matches
+                <span className="hidden sm:inline">Matches</span>
               </button>
               <button
                 onClick={() => setCurrentView('events')}
-                className={`px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
+                className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 text-sm md:text-base ${
                   (currentView as string) === 'events'
                     ? 'bg-cyan-500 text-white'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
-                Events
+                <span className="hidden sm:inline">Events</span>
               </button>
             </div>
           </div>
           
           {/* My Persona Badge */}
           {myPersona && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl border border-cyan-400/30">
-              <div className="flex items-center justify-between">
+            <div className="mt-6 p-3 md:p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl border border-cyan-400/30">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <Music className="w-5 h-5 text-cyan-400" />
+                  <Music className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
                   <div>
-                    <p className="text-sm text-gray-400">Your Persona:</p>
-                    <p className="font-semibold">{myPersona.persona_name}</p>
+                    <p className="text-xs md:text-sm text-gray-400">Your Persona:</p>
+                    <p className="font-semibold text-sm md:text-base">{myPersona.persona_name}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {myPersona.vibe_tags.map((tag, i) => (
-                    <span key={i} className="px-3 py-1 bg-cyan-400/20 text-cyan-300 text-xs rounded-full">
+                    <span key={i} className="px-2 md:px-3 py-1 bg-cyan-400/20 text-cyan-300 text-xs rounded-full">
                       {tag}
                     </span>
                   ))}

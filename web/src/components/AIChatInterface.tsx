@@ -115,9 +115,9 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({ persona }) => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center z-50"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center z-50"
       >
-        <MessageCircle className="w-6 h-6 text-white" />
+        <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-white" />
       </motion.button>
     )
   }
@@ -127,7 +127,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({ persona }) => {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className={`fixed bottom-6 right-6 w-96 bg-gray-900 border border-purple-400/20 rounded-2xl shadow-2xl z-50 ${
+      className={`fixed bottom-6 right-6 left-4 md:left-auto md:w-96 bg-gray-900 border border-purple-400/20 rounded-2xl shadow-2xl z-50 ${
         isMinimized ? 'h-16' : 'h-[500px]'
       } transition-all duration-300`}
     >

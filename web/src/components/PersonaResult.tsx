@@ -233,13 +233,13 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
           {/* Action Buttons */}
           <motion.div 
             variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4"
           >
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onExploreDashboard}
-              className="cyberpunk-btn text-lg px-8 py-4 inline-flex items-center gap-3"
+              className="cyberpunk-btn text-base md:text-lg px-6 md:px-8 py-3 md:py-4 inline-flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-center"
             >
               <BarChart3 className="w-6 h-6" />
               Explore Full Dashboard
@@ -249,7 +249,7 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowExportPanel(true)}
-              className="px-8 py-4 border-2 border-cyan-400 text-cyan-400 rounded-lg hover:bg-cyan-400/10 transition-all inline-flex items-center gap-3"
+              className="px-6 md:px-8 py-3 md:py-4 border-2 border-cyan-400 text-cyan-400 rounded-lg hover:bg-cyan-400/10 transition-all inline-flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-center text-base md:text-lg"
             >
               <Download className="w-5 h-5" />
               Export Card
@@ -260,7 +260,7 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onFindBuddy}
-                className="relative px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white rounded-lg transition-all inline-flex items-center gap-3 font-semibold shadow-lg shadow-pink-500/25"
+                className="relative px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white rounded-lg transition-all inline-flex items-center gap-2 md:gap-3 font-semibold shadow-lg shadow-pink-500/25 w-full sm:w-auto justify-center text-base md:text-lg"
               >
                 <Users className="w-5 h-5" />
                 Find Your Music Twin 🎵
@@ -274,7 +274,7 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={sharePersona}
-              className="px-8 py-4 border-2 border-purple-400 text-purple-400 rounded-lg hover:bg-purple-400/10 transition-all inline-flex items-center gap-3"
+              className="px-6 md:px-8 py-3 md:py-4 border-2 border-purple-400 text-purple-400 rounded-lg hover:bg-purple-400/10 transition-all inline-flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-center text-base md:text-lg"
             >
               <Share2 className="w-5 h-5" />
               Share Result
@@ -284,7 +284,7 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onRestart}
-              className="px-8 py-4 border-2 border-gray-400 text-gray-400 rounded-lg hover:bg-gray-400/10 transition-all inline-flex items-center gap-3"
+              className="px-6 md:px-8 py-3 md:py-4 border-2 border-gray-400 text-gray-400 rounded-lg hover:bg-gray-400/10 transition-all inline-flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-center text-base md:text-lg"
             >
               <RotateCcw className="w-5 h-5" />
               Take Quiz Again

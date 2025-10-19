@@ -98,14 +98,14 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-sm border-b border-cyan-500/20">
-        <div className="px-4 py-4">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-sm border-b border-cyan-500/20">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <motion.button
               onClick={() => onNavigate('intro')}
               whileHover={{ scale: 1.05 }}
-              className="text-lg font-bold gradient-text"
+              className="text-base font-bold gradient-text"
             >
               🎵 Music DNA
             </motion.button>
@@ -115,12 +115,13 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 text-gray-400 hover:text-white"
+              className="p-3 bg-cyan-400/20 hover:bg-cyan-400/30 rounded-lg border border-cyan-400/30 transition-all"
+              aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 text-cyan-400" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 text-cyan-400" />
               )}
             </motion.button>
           </div>
@@ -133,7 +134,7 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-black/95 backdrop-blur-sm border-t border-cyan-500/20"
+              className="bg-black/95 backdrop-blur-sm border-t border-cyan-500/20 shadow-lg"
             >
               <div className="px-4 py-4 space-y-2">
                 {menuItems.map((item) => {

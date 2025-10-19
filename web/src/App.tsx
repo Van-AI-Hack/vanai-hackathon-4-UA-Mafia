@@ -6,10 +6,11 @@ import PersonaQuiz from './components/PersonaQuiz'
 import PersonaResult from './components/PersonaResult'
 import Dashboard from './components/Dashboard'
 import NavigationMenu from './components/NavigationMenu'
+import FloatingNavigation from './components/FloatingNavigation'
 import WelcomeBack from './components/WelcomeBack'
 import LyricsStudio from './components/LyricsStudio'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
-import PerformanceMonitor from './components/PerformanceMonitor'
+// import PerformanceMonitor from './components/PerformanceMonitor' // Replaced with floating nav
 import BuddyBrowser from './components/BuddyBrowser'
 // Audio test components removed for production
 
@@ -121,15 +122,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Navigation */}
-      <NavigationMenu 
-        currentState={currentState}
-        onNavigate={setCurrentState}
-        onRestart={handleRestart}
-      />
-
       {/* Main Content */}
-      <main className="relative">
+      <main className="relative pt-0 md:pt-20">
         <AnimatePresence mode="wait">
           {currentState === 'welcome-back' && savedResult && (
             <motion.div
@@ -257,8 +251,12 @@ const App: React.FC = () => {
         {/* PWA Install Prompt */}
         <PWAInstallPrompt />
 
-        {/* Performance Monitor */}
-        <PerformanceMonitor />
+        {/* Floating Navigation Menu */}
+        <FloatingNavigation 
+          currentState={currentState}
+          onNavigate={setCurrentState}
+          onRestart={handleRestart}
+        />
 
         {/* Audio test components removed for cleaner UI */}
 

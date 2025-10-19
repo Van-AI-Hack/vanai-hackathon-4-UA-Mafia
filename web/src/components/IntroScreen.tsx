@@ -121,7 +121,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz }) => {
               <div className="text-gray-400">Unique Music Personas</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-pink-400 mb-2">7+</div>
+              <div className="text-4xl font-bold text-pink-400 mb-2">6</div>
               <div className="text-gray-400">Interactive Chart Types</div>
             </div>
           </motion.div>
