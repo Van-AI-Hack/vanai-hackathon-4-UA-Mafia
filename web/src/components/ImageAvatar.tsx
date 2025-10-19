@@ -10,11 +10,16 @@ interface ImageAvatarProps {
 }
 
 // Map persona names to image filenames
-const getPersonaImagePath = (personaId: string | number, personaName: string): string => {
+const getPersonaImagePath = (personaId: string | number, personaName: string): { webp: string; png: string } => {
   // Convert persona name to match filename format
-  // Example: "The Radio Traditionalist" -> "Persona 0 The Radio Traditionalist.png"
+  // Example: "The Radio Traditionalist" -> "Persona 0 The Radio Traditionalist.webp"
   const id = typeof personaId === 'string' ? personaId.replace('persona_', '') : personaId
-  return `/images/personas/Persona ${id} ${personaName}.png`
+  const basePath = `/images/personas/Persona ${id} ${personaName}`
+  
+  return {
+    webp: `/images/personas/webp/Persona ${id} ${personaName}.webp`,
+    png: `${basePath}.png`
+  }
 }
 
 const ImageAvatar: React.FC<ImageAvatarProps> = ({
@@ -24,7 +29,7 @@ const ImageAvatar: React.FC<ImageAvatarProps> = ({
   className = "",
   animate = true
 }) => {
-  const imagePath = getPersonaImagePath(personaId, personaName)
+  const imagePaths = getPersonaImagePath(personaId, personaName)
 
   const imageVariants = {
     hidden: { opacity: 0, scale: 0.8 },
@@ -59,16 +64,19 @@ const ImageAvatar: React.FC<ImageAvatarProps> = ({
         style={{ backgroundColor: personaColor }}
       />
       
-      {/* Main image */}
-      <img
-        src={imagePath}
-        alt={`${personaName} persona avatar`}
-        className="relative w-full h-full object-contain rounded-2xl"
-        onError={(e) => {
-          console.error(`Failed to load persona image: ${imagePath}`)
-          e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'
-        }}
-      />
+      {/* Main image - WebP with PNG fallback */}
+      <picture>
+        <source srcSet={imagePaths.webp} type="image/webp" />
+        <img
+          src={imagePaths.png}
+          alt={`${personaName} persona avatar`}
+          className="relative w-full h-full object-contain rounded-2xl"
+          onError={(e) => {
+            console.error(`Failed to load persona image: ${imagePaths.webp} or ${imagePaths.png}`)
+            e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'
+          }}
+        />
+      </picture>
       
       {/* Decorative border */}
       <div 
@@ -80,6 +88,9 @@ const ImageAvatar: React.FC<ImageAvatarProps> = ({
 }
 
 export default ImageAvatar
+
+
+
 
 
 

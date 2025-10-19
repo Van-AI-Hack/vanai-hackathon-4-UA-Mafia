@@ -455,7 +455,6 @@ const LyricsStudio: React.FC = () => {
     setActiveSection(section)
   }
 
-  const currentSectionIndex = studioSectionOrder.indexOf(activeSection)
   const furthestUnlockedIndex = unlockedSections
     .map(section => studioSectionOrder.indexOf(section))
     .reduce((highest, index) => Math.max(highest, index), 0)

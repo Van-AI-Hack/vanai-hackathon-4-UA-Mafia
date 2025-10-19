@@ -32,6 +32,9 @@ class AudioManager {
   private masterGain: GainNode | null = null
   private isAudioContextPlaying: boolean = false
   private currentPersonaId: number | null = null
+  private activeOscillators: OscillatorNode[] = []
+  private activeGains: GainNode[] = []
+  private chordChangeInterval: number | null = null
   
   constructor() {
     // ALWAYS start unmuted for hackathon demo
@@ -241,9 +244,11 @@ class AudioManager {
         osc.start()
         lfo.start()
         
-        // Store for chord changes
+        // Store for chord changes and cleanup
         oscillators.push(osc)
         gains.push(oscGain)
+        this.activeOscillators.push(osc)
+        this.activeGains.push(oscGain)
       })
       
       // Chord progression automation
@@ -261,7 +266,7 @@ class AudioManager {
       }
       
       // Set up chord changes
-      setInterval(changeChord, config.chordChangeTime * 1000)
+      this.chordChangeInterval = window.setInterval(changeChord, config.chordChangeTime * 1000)
       
       // Rich harmonic pad layer
       config.harmonics.forEach((freq, index) => {
@@ -288,6 +293,10 @@ class AudioManager {
         
         osc1.start()
         osc2.start()
+        
+        // Track harmonic oscillators for cleanup
+        this.activeOscillators.push(osc1, osc2)
+        this.activeGains.push(gain)
       })
       
       // Subtle sub-bass for depth
@@ -300,6 +309,10 @@ class AudioManager {
       subBass.connect(subGain)
       subGain.connect(this.masterGain!)
       subBass.start()
+      
+      // Track sub-bass for cleanup
+      this.activeOscillators.push(subBass)
+      this.activeGains.push(subGain)
       
       this.isAudioContextPlaying = true
       console.log(`🎵 Playing ${config.name} soundscape`)
@@ -315,9 +328,30 @@ class AudioManager {
   pauseBackgroundMusic() {
     console.log('🔧 pauseBackgroundMusic called')
     console.log('  - Has masterGain:', !!this.masterGain)
+    console.log('  - Active oscillators:', this.activeOscillators.length)
     
     if (this.backgroundMusic && !this.backgroundMusic.paused) {
       this.backgroundMusic.pause()
+    }
+
+    // Stop all active oscillators
+    this.activeOscillators.forEach((osc, index) => {
+      try {
+        osc.stop()
+        console.log(`🛑 Stopped oscillator ${index}`)
+      } catch (err) {
+        console.log(`⚠️ Oscillator ${index} already stopped:`, err)
+      }
+    })
+    
+    // Clear the oscillator arrays
+    this.activeOscillators = []
+    this.activeGains = []
+    
+    // Clear chord change interval
+    if (this.chordChangeInterval) {
+      clearInterval(this.chordChangeInterval)
+      this.chordChangeInterval = null
     }
 
     // Mute the master gain to silence all audio instantly
@@ -327,7 +361,7 @@ class AudioManager {
       this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, currentTime)
       this.masterGain.gain.linearRampToValueAtTime(0, currentTime + 0.05)
       this.isAudioContextPlaying = false
-      console.log('✅ Music PAUSED - Master gain set to 0')
+      console.log('✅ Music PAUSED - All oscillators stopped and master gain set to 0')
     } else {
       console.log('⚠️ No masterGain to pause')
     }
@@ -340,13 +374,19 @@ class AudioManager {
     console.log('🔧 resumeBackgroundMusic called')
     console.log('  - Has masterGain:', !!this.masterGain)
     console.log('  - Current volume:', this.volume)
+    console.log('  - Current persona ID:', this.currentPersonaId)
     
     if (this.backgroundMusic && this.backgroundMusic.paused) {
       this.backgroundMusic.play().catch(err => console.log('HTML Audio resume failed:', err))
     }
 
-    // Restore master gain to resume audio
-    if (this.masterGain && this.audioContext) {
+    // If we have a persona ID but no active audio, regenerate the soundscape
+    if (this.currentPersonaId !== null && this.activeOscillators.length === 0) {
+      console.log('🔄 Regenerating audio (oscillators were stopped)')
+      this.generateAmbientTone(this.currentPersonaId)
+      this.isAudioContextPlaying = true
+    } else if (this.masterGain && this.audioContext) {
+      // Restore master gain to resume audio
       const currentTime = this.audioContext.currentTime
       const targetVolume = this.isMuted ? 0 : this.volume * 0.35
       this.masterGain.gain.cancelScheduledValues(currentTime)
@@ -354,11 +394,6 @@ class AudioManager {
       this.masterGain.gain.linearRampToValueAtTime(targetVolume, currentTime + 0.3)
       this.isAudioContextPlaying = true
       console.log(`✅ Music RESUMED - Master gain restored to ${targetVolume.toFixed(3)}`)
-    } else if (!this.audioContext && this.currentPersonaId !== null) {
-      // If context was closed, regenerate
-      console.log('🔄 Regenerating audio (context was closed)')
-      this.generateAmbientTone(this.currentPersonaId)
-      this.isAudioContextPlaying = true
     } else {
       console.log('⚠️ Cannot resume - no valid audio state')
     }
@@ -374,13 +409,34 @@ class AudioManager {
       this.backgroundMusic = null
     }
 
+    // Stop all active oscillators
+    this.activeOscillators.forEach((osc, index) => {
+      try {
+        osc.stop()
+        console.log(`🛑 Stopped oscillator ${index}`)
+      } catch (err) {
+        console.log(`⚠️ Oscillator ${index} already stopped:`, err)
+      }
+    })
+    
+    // Clear the oscillator arrays
+    this.activeOscillators = []
+    this.activeGains = []
+    
+    // Clear chord change interval
+    if (this.chordChangeInterval) {
+      clearInterval(this.chordChangeInterval)
+      this.chordChangeInterval = null
+    }
+
     // Close Web Audio API context completely
     if (this.audioContext) {
       this.audioContext.close()
       this.audioContext = null
       this.masterGain = null
       this.isAudioContextPlaying = false
-      console.log('🎵 Music stopped')
+      this.currentPersonaId = null
+      console.log('🎵 Music stopped completely')
     }
   }
 
