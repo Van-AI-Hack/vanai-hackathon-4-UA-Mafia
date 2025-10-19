@@ -106,10 +106,14 @@ npm run lint         # Run ESLint
 ```
 
 ### Environment
+- Copy `env.example` to `.env` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_CHATGPT_API_KEY`, and `VITE_SUNO_API_KEY` before using the AI Studio
 - **Development**: `http://localhost:5173`
 - **Hot Reload**: Enabled
 - **TypeScript**: Strict mode
 - **ESLint**: Configured
+
+### Database
+- Execute `DATABASE_SETUP.sql` in your Supabase project to create `buddy_personas` and `suno_requests`
 
 ## 📊 Data Sources
 

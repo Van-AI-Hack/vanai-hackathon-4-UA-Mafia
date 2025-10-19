@@ -20,6 +20,23 @@ npm run preview
 # Open http://localhost:4173
 ```
 
+### 🔐 Environment Variables
+
+Copy `web/env.example` to `web/.env` and provide the Supabase + AI credentials:
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_CHATGPT_API_KEY=your_openai_api_key
+VITE_SUNO_API_KEY=your_suno_api_key
+```
+
+These keys are bundled into the AI Studio so the UI no longer asks for manual entry. Update them before running the lyric generator or Suno track builder.
+
+### 🗄️ Database Setup
+
+Run the statements in `web/DATABASE_SETUP.sql` inside your Supabase SQL editor to provision the `buddy_personas` and `suno_requests` tables along with their policies.
+
 ### 🎯 What This Is
 
 A cutting-edge, AI-powered web application that analyzes users' music preferences and classifies them into distinct Canadian music personas. Built with modern web technologies, real survey data from 1,006 Canadian music listeners, and advanced AI features.

@@ -97,3 +97,47 @@ COMMENT ON TABLE buddy_personas IS 'Stores user music personas for the Music Bud
 COMMENT ON COLUMN buddy_personas.access_token IS 'Used for users to manage their persona without login';
 COMMENT ON COLUMN buddy_personas.expires_at IS 'Auto-delete personas after 90 days for privacy';
 
+-- Suno request history for AI Studio
+CREATE TABLE IF NOT EXISTS suno_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  job_id TEXT UNIQUE NOT NULL,
+  title TEXT,
+  prompt TEXT,
+  style TEXT,
+  tags TEXT[] DEFAULT '{}',
+  quiz_answers JSONB DEFAULT '{}'::jsonb,
+  status TEXT DEFAULT 'pending',
+  message TEXT,
+  tracks JSONB DEFAULT '[]'::jsonb,
+  custom_mode BOOLEAN,
+  instrumental_only BOOLEAN,
+  model TEXT,
+  negative_tags TEXT[] DEFAULT '{}',
+  vocal_gender TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_polled_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_suno_requests_job_id ON suno_requests(job_id);
+CREATE INDEX IF NOT EXISTS idx_suno_requests_status ON suno_requests(status);
+
+ALTER TABLE suno_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read Suno requests"
+  ON suno_requests
+  FOR SELECT
+  USING (true);
+
+CREATE POLICY "Anyone can insert Suno requests"
+  ON suno_requests
+  FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Anyone can update Suno requests"
+  ON suno_requests
+  FOR UPDATE
+  USING (true)
+  WITH CHECK (true);
+
+COMMENT ON TABLE suno_requests IS 'Stores AI Studio lyric → Suno generation history for reuse and previews.';
