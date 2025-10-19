@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import Plot from 'react-plotly.js'
 import { Persona, SurveyData } from '../utils/dataLoader'
 import { DashboardFilters } from './Dashboard'
+import { simpleAudioManager } from '../services/simpleAudioManager'
 
 interface RealDataChartsProps {
   surveyData: SurveyData | null
@@ -17,15 +18,15 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
   personas, 
   activeTab,
   filters,
-  userPersona: _userPersona // Reserved for future use in data highlighting
+  userPersona
 }) => {
   const [chartKey, setChartKey] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [useSimpleCharts, setUseSimpleCharts] = useState(false)
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [currentPlayingMethod, setCurrentPlayingMethod] = useState<string | null>(null)
   const nodeLabelsRef = useRef<string[]>([])
+  const stopTimeoutRef = useRef<number | null>(null)
   
   console.log('RealDataCharts - Data status:', { 
     hasSurveyData: !!surveyData, 
@@ -36,6 +37,7 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
     error,
     useSimpleCharts
   })
+  
   
   // Force re-render when activeTab or filters change
   useEffect(() => {
@@ -59,86 +61,149 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
     filters.highlightUser
   )
 
-  // Audio control functions for hover events
-  const playRadioAudio = () => {
-    if (isAudioPlaying) return
-    
-    try {
-      // Create audio element if it doesn't exist
-      if (!audioRef.current) {
-        audioRef.current = new Audio('/audio/persona-playlists/radio-55-plus-playlist.mp3')
-        audioRef.current.loop = true
-        audioRef.current.volume = 0.3
-      }
-      
-      audioRef.current.play().then(() => {
-        setIsAudioPlaying(true)
-        console.log('🎵 Playing radio 55+ playlist on hover')
-      }).catch(err => {
-        console.error('Audio play failed:', err)
-      })
-    } catch (err) {
-      console.error('Audio setup failed:', err)
+  // Simple audio control functions
+  const playFlowAudio = (discoveryMethod: string, ageGroup: string) => {
+    // Cancel any pending stop
+    if (stopTimeoutRef.current) {
+      clearTimeout(stopTimeoutRef.current)
+      stopTimeoutRef.current = null
     }
+    
+    simpleAudioManager.play(discoveryMethod, ageGroup)
+    setCurrentPlayingMethod(discoveryMethod)
   }
 
-  const stopRadioAudio = () => {
-    if (audioRef.current && !audioRef.current.paused) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsAudioPlaying(false)
-      console.log('🔇 Stopped radio 55+ playlist on unhover')
+  const stopFlowAudio = () => {
+    // Cancel any pending stop
+    if (stopTimeoutRef.current) {
+      clearTimeout(stopTimeoutRef.current)
+      stopTimeoutRef.current = null
     }
+    
+    // Stop immediately
+    simpleAudioManager.stop()
+    setCurrentPlayingMethod(null)
   }
 
-  // Check if hovered element is the radio to 55+ flow
-  const isRadioTo55PlusFlow = (point: any) => {
-    if (!point) return false
-    
-    try {
-      // Debug: log the point structure to understand it better
-      console.log('Hover point:', point)
-      
-      // Check if we're hovering over a link/flow (not a node)
-      // Links have different properties than nodes
-      if (point.curveNumber === 0 && point.pointNumber !== undefined) {
-        // Check if this is a link by looking for source and target properties
-        if (point.source && point.target) {
-          console.log('✅ Hovering over a link/flow!')
-          console.log('Source:', point.source)
-          console.log('Target:', point.target)
-          
-          // Check if this link goes from "The radio" to "55 Plus"
-          const sourceLabel = point.source.label || ''
-          const targetLabel = point.target.label || ''
-          
-          console.log('Source label:', sourceLabel)
-          console.log('Target label:', targetLabel)
-          
-          if (sourceLabel.includes('The radio') && targetLabel.includes('55 Plus')) {
-            console.log('✅ Found the radio to 55+ flow!')
-            return true
-          }
-        } else {
-          // This is a node, not a link
-          console.log('Hovering over a node, not a flow')
-        }
-      }
-      
-      return false
-    } catch (err) {
-      console.error('Error checking flow:', err)
-      return false
+
+  // Detect discovery method AND age group from hover
+  const getFlowInfoFromHover = (point: any): { method: string; ageGroup: string } | null => {
+    if (!point || !point.source || !point.target) {
+      console.log('⚠️ Invalid point data')
+      return null
     }
+    
+    const sourceLabel = point.source.label || ''
+    const targetLabel = point.target.label || ''
+    
+    console.log(`🔍 RAW Flow: ${sourceLabel} → ${targetLabel}`)
+    
+    // Discovery methods mapping (based on actual survey data)
+    const discoveryMethodsMap: Record<string, string> = {
+      // Radio
+      'the radio': 'Radio',
+      'radio': 'Radio',
+      
+      // Friends
+      'family or friends': 'Friends and family recommendations',
+      'friends and family': 'Friends and family recommendations',
+      'family': 'Friends and family recommendations',
+      'friends': 'Friends and family recommendations',
+      
+      // Streaming
+      'spotify': 'Streaming service recommendations',
+      'apple music': 'Streaming service recommendations',
+      'streaming': 'Streaming service recommendations',
+      
+      // Social Media / TikTok
+      'tiktok': 'Social media',
+      'social media': 'Social media',
+      'social': 'Social media',
+      
+      // Music Videos / MTV
+      'muchmusic': 'Live events and concerts',
+      'mtv': 'Live events and concerts',
+      'watching': 'Live events and concerts',
+      'music videos': 'Live events and concerts',
+      
+      // Live events
+      'live events': 'Live events and concerts',
+      'concerts': 'Live events and concerts'
+    }
+    
+    // Age groups mapping (handle ALL possible variations)
+    const ageGroupsMap: Record<string, string> = {
+      'plus': '55+',  // "55 Plus" after removing numbers becomes "plus"
+      '55 plus': '55+',
+      '55+': '55+',
+      '18-34': '18-34',
+      '35-54': '35-54',
+      '-': '18-34', // "18-34" after removing numbers becomes "-"
+      '- -': '35-54' // "35-54" after removing numbers becomes "- -"
+    }
+    
+    // Clean labels (remove HTML, emojis, numbers, percentages, extra text)
+    const cleanSource = sourceLabel
+      .toLowerCase()
+      .replace(/<br>/gi, ' ') // Replace BR with space
+      .replace(/<[^>]*>/g, '') // Remove other HTML tags
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu, '') // Remove all emojis (wider range)
+      .replace(/\d+/g, '') // Remove numbers
+      .replace(/[()%]/g, '') // Remove parens and percent
+      .replace(/\./g, '') // Remove periods
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim()
+    
+    const cleanTarget = targetLabel
+      .toLowerCase()
+      .replace(/<br>/gi, ' ')
+      .replace(/<[^>]*>/g, '')
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+      .replace(/people/g, '')
+      .replace(/[()%]/g, '')
+      .replace(/\./g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    
+    console.log(`   Cleaned: "${cleanSource}" → "${cleanTarget}"`)
+    
+    // Find matching discovery method
+    let method: string | null = null
+    for (const [key, value] of Object.entries(discoveryMethodsMap)) {
+      if (cleanSource.includes(key)) {
+        method = value
+        console.log(`   ✓ Found method: "${key}" maps to "${value}"`)
+        break
+      }
+    }
+    
+    // Find matching age group
+    let ageGroup: string | null = null
+    for (const [key, value] of Object.entries(ageGroupsMap)) {
+      if (cleanTarget.includes(key) || cleanTarget === key) {
+        ageGroup = value
+        console.log(`   ✓ Found age: "${key}" maps to "${value}"`)
+        break
+      }
+    }
+    
+    if (method && ageGroup) {
+      console.log(`✅ VALID FLOW: ${method} → ${ageGroup}`)
+      return { method, ageGroup }
+    }
+    
+    console.log(`❌ NOT a valid flow - method: ${method}, ageGroup: ${ageGroup}`)
+    return null
   }
+
 
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
+      if (stopTimeoutRef.current) {
+        clearTimeout(stopTimeoutRef.current)
       }
+      simpleAudioManager.stop()
     }
   }, [])
 
@@ -663,10 +728,10 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
               <h4 className="text-xl font-bold text-white">🌊 Discovery Method Flow</h4>
               <div className="flex items-center gap-2">
                 {hasActiveFilters && <span className="text-xs px-2 py-1 bg-purple-400/20 text-purple-400 rounded-full">Filtered</span>}
-                {isAudioPlaying && (
+                {currentPlayingMethod && (
                   <span className="text-xs px-2 py-1 bg-green-400/20 text-green-400 rounded-full flex items-center gap-1">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                    Radio 55+ Playing
+                    {currentPlayingMethod} Playing
                   </span>
                 )}
                 <span className="text-sm text-cyan-400 font-semibold">{totalDiscovery} responses</span>
@@ -706,29 +771,30 @@ const RealDataCharts: React.FC<RealDataChartsProps> = ({
                 }}
                 style={{ width: '100%', height: '100%' }}
                 onInitialized={(_figure: any, graphDiv: any) => {
-                  // Set up hover events on the plotly instance
+                  console.log('🎵 Setting up audio events')
+                  
+                  // Hover event
                   graphDiv.on('plotly_hover', (event: any) => {
                     const point = event.points[0]
-                    if (isRadioTo55PlusFlow(point)) {
-                      playRadioAudio()
+                    const flowInfo = getFlowInfoFromHover(point)
+                    if (flowInfo) {
+                      playFlowAudio(flowInfo.method, flowInfo.ageGroup)
                     }
                   })
                   
+                  // Unhover event
                   graphDiv.on('plotly_unhover', () => {
-                    stopRadioAudio()
+                    console.log('📍 Unhover - stopping audio')
+                    stopFlowAudio()
                   })
                   
-                  // Add click event as fallback
-                  graphDiv.on('plotly_click', (event: any) => {
-                    const point = event.points[0]
-                    if (isRadioTo55PlusFlow(point)) {
-                      if (isAudioPlaying) {
-                        stopRadioAudio()
-                      } else {
-                        playRadioAudio()
-                      }
-                    }
+                  // Mouseleave safeguard
+                  graphDiv.addEventListener('mouseleave', () => {
+                    console.log('🖱️ Mouse left chart - stopping audio')
+                    stopFlowAudio()
                   })
+                  
+                  console.log('✅ Audio events ready')
                 }}
                 onError={(err: any) => {
                   console.error('Sankey chart error:', err)
