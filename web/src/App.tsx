@@ -5,7 +5,7 @@ import IntroScreen from './components/IntroScreen'
 import PersonaQuiz from './components/PersonaQuiz'
 import PersonaResult from './components/PersonaResult'
 import Dashboard from './components/Dashboard'
-import NavigationMenu from './components/NavigationMenu'
+// import NavigationMenu from './components/NavigationMenu' // Not used in FloatingNavigation
 import FloatingNavigation from './components/FloatingNavigation'
 import WelcomeBack from './components/WelcomeBack'
 import LyricsStudio from './components/LyricsStudio'

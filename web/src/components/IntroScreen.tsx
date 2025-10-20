@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Music, Brain, BarChart3, Users, Zap, Play } from 'lucide-react'
+import Logo3D from './Logo3D'
 // import audioManager from '../utils/audioManager'
 
 interface IntroScreenProps {
@@ -59,12 +60,16 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz }) => {
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="relative">
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full mb-6"
+                className="inline-block w-56 h-56 mb-6"
               >
-                <Music className="w-10 h-10 text-white" />
+                <Logo3D 
+                  className="w-full h-full"
+                  animate={true}
+                  rotationSpeed={0.8}
+                />
               </motion.div>
               
               <motion.h1 

@@ -70,7 +70,7 @@ const ImageAvatar: React.FC<ImageAvatarProps> = ({
         <img
           src={imagePaths.png}
           alt={`${personaName} persona avatar`}
-          className="relative w-full h-full object-contain rounded-2xl"
+          className="relative w-full h-full object-contain rounded-2xl z-0"
           onError={(e) => {
             console.error(`Failed to load persona image: ${imagePaths.webp} or ${imagePaths.png}`)
             e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'

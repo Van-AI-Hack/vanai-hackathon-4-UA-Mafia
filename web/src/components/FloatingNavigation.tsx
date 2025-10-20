@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Menu, X, Home, Brain, BarChart3, RotateCcw, Music4, Users } from 'lucide-react'
 
 type AppState = 'intro' | 'quiz' | 'result' | 'dashboard' | 'lyrics' | 'welcome-back' | 'buddy'

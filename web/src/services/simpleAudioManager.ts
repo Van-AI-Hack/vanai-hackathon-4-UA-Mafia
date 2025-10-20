@@ -60,7 +60,7 @@ export class SimpleAudioManager {
       
       // Error handler
       this.audio.onerror = (e) => {
-        const audio = e.target as HTMLAudioElement
+        const audio = (e as Event).target as HTMLAudioElement
         console.error(`❌ Failed to load audio:`, {
           path: audioPath,
           error: audio.error?.message,

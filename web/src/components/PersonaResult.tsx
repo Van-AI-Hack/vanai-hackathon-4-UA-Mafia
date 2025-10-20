@@ -8,6 +8,7 @@ import AIMusicRecommendations from './AIMusicRecommendations'
 import AIChatInterface from './AIChatInterface'
 import AudioPlayer from './AudioPlayer'
 import PersonaAvatar from './PersonaAvatar'
+import Logo3D from './Logo3D'
 import { saveToLocalStorage } from '../utils/exportUtils'
 import type { Persona } from '../utils/dataLoader'
 
@@ -78,12 +79,16 @@ const PersonaResult: React.FC<PersonaResultProps> = ({
           {/* Header */}
           <motion.div variants={itemVariants} className="text-center">
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-              className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full mb-6"
+                className="inline-block w-56 h-56 mb-6"
             >
-              <Sparkles className="w-12 h-12 text-white" />
+              <Logo3D 
+                className="w-full h-full"
+                animate={true}
+                rotationSpeed={1}
+              />
             </motion.div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-4">

@@ -16,9 +16,9 @@ interface RealDataChartsProps {
 const RealDataCharts: React.FC<RealDataChartsProps> = ({ 
   surveyData, 
   personas, 
-  activeTab,
+  activeTab, 
   filters,
-  userPersona
+  userPersona: _userPersona
 }) => {
   const [chartKey, setChartKey] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
